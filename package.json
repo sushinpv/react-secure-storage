@@ -4,5 +4,6 @@
   "description": "This libraries is used to securely store data in local storage",
   "main": "index.js",
   "author": "Sushin Pv",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": "https://github.com/sushinpv/react-secure-storage.git"
 }
