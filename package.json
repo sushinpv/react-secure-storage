@@ -1,6 +1,6 @@
 {
   "name": "react-secure-storage",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "This libraries is used to securely store data in local storage",
   "author": "Sushin Pv",
   "main": "dist/index.js",
@@ -57,6 +57,8 @@
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.18.2",
     "@babel/preset-typescript": "^7.17.12",
-    "@types/clientjs": "^0.2.0"
+    "@types/clientjs": "^0.2.0",
+    "@types/murmurhash-js": "^1.0.3",
+    "@types/ua-parser-js": "^0.7.36"
   }
 }

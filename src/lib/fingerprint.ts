@@ -1,4 +1,6 @@
-import { ClientJS } from "clientjs";
+// import { ClientJS } from "clientjs";
+
+import clientJS from "./finger-print";
 
 const HASH_KEY = "E86E2612010258B35137";
 
@@ -10,7 +12,8 @@ export function hashCode(str: string): number {
 }
 
 const getFingerprint = () => {
-  return new ClientJS().getFingerprint() + (process.env.SECURE_LOCAL_STORAGE_HASH_KEY || HASH_KEY);
+  return clientJS.getFingerprint() + (process.env.SECURE_LOCAL_STORAGE_HASH_KEY || HASH_KEY);
+  // return new ClientJS().getFingerprint() + (process.env.SECURE_LOCAL_STORAGE_HASH_KEY || HASH_KEY);
 };
 
 export default getFingerprint;
