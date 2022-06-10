@@ -1,17 +1,9 @@
 import murmurhash3_32_gc from "murmurhash-js/murmurhash3_gc";
-import UAParser from "ua-parser-js";
 // let UAParser = require("ua-parser-js");
 // let Detector = require("./vendor/fontdetect");
 
-let browserData: any; // Global user agent browser object.
-let fontDetective: any; // Global font detective object.
-
 // ClientJS prototype which contains all methods.
 const ClientJS = class {
-  constructor() {
-    let parser = new UAParser();
-    browserData = parser.getResult();
-  }
   //
   // MAIN METHODS
   //
@@ -20,7 +12,7 @@ const ClientJS = class {
   getFingerprint() {
     let bar = "|";
 
-    let userAgent = browserData.ua;
+    let userAgent = navigator.userAgent;
     let screenPrint = this.getScreenPrint();
     let pluginList = this.getPlugins();
     let fontList = this.getFonts();
