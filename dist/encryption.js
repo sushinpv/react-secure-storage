@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _cryptoJs = require("crypto-js");
+var _encUtf = _interopRequireDefault(require("crypto-js/enc-utf8"));
 
 var _aes = _interopRequireDefault(require("crypto-js/aes"));
 
@@ -40,7 +40,7 @@ var EncryptionService = /*#__PURE__*/function () {
     value: function decrypt(value) {
       var bytes = _aes.default.decrypt(value, this.secureKey);
 
-      return bytes.toString(_cryptoJs.enc.Utf8);
+      return bytes.toString(_encUtf.default);
     }
   }]);
 
