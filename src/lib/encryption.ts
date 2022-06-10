@@ -1,4 +1,4 @@
-import { enc } from "crypto-js";
+import Utf8 from "crypto-js/enc-utf8";
 import AES from "crypto-js/aes";
 import getFingerprint from "./fingerprint";
 
@@ -13,7 +13,7 @@ const EncryptionService = class {
 
   decrypt(value: string) {
     var bytes = AES.decrypt(value, this.secureKey);
-    return bytes.toString(enc.Utf8);
+    return bytes.toString(Utf8);
   }
 };
 
