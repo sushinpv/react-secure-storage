@@ -5,6 +5,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
+var _encryption = _interopRequireDefault(require("./encryption"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -18,17 +22,39 @@ function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Sy
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 var getAllLocalStorageItems = function getAllLocalStorageItems() {
-  var localStorageItems = [];
+  var localStorageItems = {};
 
   for (var _i = 0, _Object$entries = Object.entries(localStorage); _i < _Object$entries.length; _i++) {
     var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
         key = _Object$entries$_i[0],
         value = _Object$entries$_i[1];
 
-    localStorageItems.push({
-      key: key,
-      value: value
-    });
+    if (key.startsWith("@secure.")) {
+      var keyType = key.replace("@secure.", "")[0];
+
+      var decryptedValue = _encryption.default.decrypt(value);
+
+      var parsedValue = null;
+
+      switch (keyType) {
+        case "b":
+          parsedValue = decryptedValue === "true";
+          break;
+
+        case "j":
+          parsedValue = JSON.parse(decryptedValue);
+          break;
+
+        case "n":
+          parsedValue = Number(decryptedValue);
+          break;
+
+        default:
+          parsedValue = decryptedValue;
+      }
+
+      localStorageItems[key] = parsedValue;
+    }
   }
 
   return localStorageItems;
