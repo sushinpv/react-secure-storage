@@ -7,8 +7,6 @@ exports.default = void 0;
 
 var _murmurhash3_gc = _interopRequireDefault(require("murmurhash-js/murmurhash3_gc"));
 
-var _uaParserJs = _interopRequireDefault(require("ua-parser-js"));
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -19,28 +17,21 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 // let UAParser = require("ua-parser-js");
 // let Detector = require("./vendor/fontdetect");
-var browserData; // Global user agent browser object.
-
-var fontDetective; // Global font detective object.
 // ClientJS prototype which contains all methods.
-
 var ClientJS = /*#__PURE__*/function () {
   function ClientJS() {
     _classCallCheck(this, ClientJS);
-
-    var parser = new _uaParserJs.default();
-    browserData = parser.getResult();
-  } //
-  // MAIN METHODS
-  //
-  // Get Fingerprint.  Return a 32-bit integer representing the browsers fingerprint.
-
+  }
 
   _createClass(ClientJS, [{
     key: "getFingerprint",
-    value: function getFingerprint() {
+    value: //
+    // MAIN METHODS
+    //
+    // Get Fingerprint.  Return a 32-bit integer representing the browsers fingerprint.
+    function getFingerprint() {
       var bar = "|";
-      var userAgent = browserData.ua;
+      var userAgent = navigator.userAgent;
       var screenPrint = this.getScreenPrint();
       var pluginList = this.getPlugins();
       var fontList = this.getFonts();
