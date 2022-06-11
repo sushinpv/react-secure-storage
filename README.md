@@ -10,15 +10,19 @@ In this case, if someone copies the data from local storage and past on a differ
 
 This is the problem when you have a single secure key! **Then how do we solve this issue ?**
 
+
+
 ## Why React Secure Storage ?
 
-React secure storage is created to securely write the data to local storage, here secure storage library generate a secure key for every browser and encrypt the data using this key, which means only the browser which encrypted the data can decrypt it, 
+React secure storage is created to securely write the data to local storage ( **Basically its a wrapper written on top of default localStorage to write the data securely to the localStorage** ), here secure storage library generate a secure key for every browser and encrypt the data using this key, which means only the browser which encrypted the data can decrypt it, 
 
 Additionally react secure storage preserve the data format for every data type, As out of the box it supports the following data types 
 
 **String | Object | Number | Boolean**
 
 Which means you don't need to explicitly convert every data to string
+
+
 
 ## How does it work ?
 
@@ -29,6 +33,8 @@ The key is generated using browser fingerprint, which is generated using 10+ bro
 The user specific Secure key can be configured using  .env file as
 
     SECURE_LOCAL_STORAGE_HASH_KEY=xxxxxxxxxxxxxxxx
+
+
 
 
 ## How to use
@@ -45,10 +51,12 @@ You can use the following methods to read and write items to secure local storag
 
 |         Function       |Usecase                          | Datatype                         |
 |----------------|-------------------------------|-----------------------------|
-|`setItem(key, value)` |To set values to secure storage            |Supports `'String | Object | Number | Boolean'` as value            |
+|`setItem(key, value)` |To set values to secure storage            |Supports `'String - Object - Number - Boolean'` as value            |
 |`getItem(key)`        |To get values which is saved on secure local storage           | Return null if the key does not exits           |
 |`removeItem(key)`          | To remove specified key from secure local storage|  |
 |`clear()`          | Removed all data from secure local storage|  |
+
+
 
 
 ## Sample Code
@@ -78,3 +86,9 @@ You can use the following methods to read and write items to secure local storag
     
     export  default  App;
 
+
+
+
+## Whats new ?
+
+Releasing the first version of react secure local storage, which supports `setItem`, `getItem`, `removeItem` and `clear` functions 

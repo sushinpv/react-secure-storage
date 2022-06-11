@@ -27,8 +27,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
  */
 var getAllLocalStorageItems = function getAllLocalStorageItems() {
   var localStorageItems = {};
-
-  for (var _i = 0, _Object$entries = Object.entries(localStorage); _i < _Object$entries.length; _i++) {
+  if (typeof window !== "undefined") for (var _i = 0, _Object$entries = Object.entries(localStorage); _i < _Object$entries.length; _i++) {
     var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
         key = _Object$entries$_i[0],
         value = _Object$entries$_i[1];
@@ -59,7 +58,6 @@ var getAllLocalStorageItems = function getAllLocalStorageItems() {
       localStorageItems[parsedKey] = parsedValue;
     }
   }
-
   return localStorageItems;
 };
 
