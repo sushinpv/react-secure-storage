@@ -35,15 +35,56 @@ var SecureLocalStorage = /*#__PURE__*/function () {
 
     this.localStorageItems = (0, _localStorageHelpers.default)();
   }
+  /**
+   * Function to set value to secure local storage
+   * @param key to be added
+   * @param value value to be added
+   */
+
 
   _createClass(SecureLocalStorage, [{
     key: "setItem",
     value: function setItem(key, value) {
       var parsedValue = _typeof(value) === "object" ? JSON.stringify(value) : value + "";
       var keyType = _typeof(value) === "object" ? "j" : typeof value === "boolean" ? "b" : typeof value === "number" ? "n" : "s";
-      var parsedKey = KEY_PREFIX + "".concat(keyType, ".") + key;
+      var parsedKeyLocal = KEY_PREFIX + "".concat(keyType, ".") + key;
+      var parsedKey = KEY_PREFIX + key;
       if (key != null) this.localStorageItems[parsedKey] = value;
-      localStorage.setItem(parsedKey, _encryption.default.encrypt(parsedValue));
+      localStorage.setItem(parsedKeyLocal, _encryption.default.encrypt(parsedValue));
+    }
+    /**
+     * Function to get value from secure local storage
+     * @param key to get
+     * @returns
+     */
+
+  }, {
+    key: "getItem",
+    value: function getItem(key) {
+      var parsedKey = KEY_PREFIX + key;
+      return this.localStorageItems[parsedKey] || null;
+    }
+    /**
+     * Function to remove item from secure local storage
+     * @param key to be removed
+     */
+
+  }, {
+    key: "removeItem",
+    value: function removeItem(key) {
+      var parsedKey = KEY_PREFIX + key;
+      this.localStorageItems[parsedKey] = null;
+      localStorage.removeItem(key);
+    }
+    /**
+     * Function to clear secure local storage
+     */
+
+  }, {
+    key: "clear",
+    value: function clear() {
+      this.localStorageItems = {};
+      localStorage.clear();
     }
   }]);
 

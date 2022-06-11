@@ -21,6 +21,9 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+/**
+ * EncryptionService
+ */
 var EncryptionService = /*#__PURE__*/function () {
   function EncryptionService() {
     _classCallCheck(this, EncryptionService);
@@ -29,18 +32,34 @@ var EncryptionService = /*#__PURE__*/function () {
 
     this.secureKey = (0, _fingerprint.default)();
   }
+  /**
+   * Function to encrypt data
+   * @param value
+   * @returns
+   */
+
 
   _createClass(EncryptionService, [{
     key: "encrypt",
     value: function encrypt(value) {
       return _aes.default.encrypt(value, this.secureKey).toString();
     }
+    /**
+     * Function to decrypt data
+     * @param value
+     * @returns
+     */
+
   }, {
     key: "decrypt",
     value: function decrypt(value) {
-      var bytes = _aes.default.decrypt(value, this.secureKey);
+      try {
+        var bytes = _aes.default.decrypt(value, this.secureKey);
 
-      return bytes.toString(_encUtf.default);
+        return bytes.toString(_encUtf.default) || null;
+      } catch (ex) {
+        return null;
+      }
     }
   }]);
 

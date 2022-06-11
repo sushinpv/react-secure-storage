@@ -21,6 +21,10 @@ function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Sy
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
+/**
+ * Function to preload all the local storage data
+ * @returns
+ */
 var getAllLocalStorageItems = function getAllLocalStorageItems() {
   var localStorageItems = {};
 
@@ -31,12 +35,12 @@ var getAllLocalStorageItems = function getAllLocalStorageItems() {
 
     if (key.startsWith("@secure.")) {
       var keyType = key.replace("@secure.", "")[0];
+      var parsedKey = key.replace(/[.][bjns][.]/, ".");
 
       var decryptedValue = _encryption.default.decrypt(value);
 
       var parsedValue = null;
-
-      switch (keyType) {
+      if (decryptedValue != null) switch (keyType) {
         case "b":
           parsedValue = decryptedValue === "true";
           break;
@@ -52,8 +56,7 @@ var getAllLocalStorageItems = function getAllLocalStorageItems() {
         default:
           parsedValue = decryptedValue;
       }
-
-      localStorageItems[key] = parsedValue;
+      localStorageItems[parsedKey] = parsedValue;
     }
   }
 
