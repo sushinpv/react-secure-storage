@@ -5,14 +5,13 @@ import "./App.css";
 
 function App() {
   useEffect(() => {
-    // console.log("secureLocalStorage", secureLocalStorage);
-    // secureLocalStorage.setItem("object", {
-    //   message: "This is testing of local storage",
-    // });
-    // secureLocalStorage.setItem("number", 12);
-    // secureLocalStorage.setItem("string", "12");
-    // secureLocalStorage.setItem("boolean", true);
-    console.log('secureLocalStorage.getItem("number")', secureLocalStorage.getItem("object"));
+    console.log("secureLocalStorage", secureLocalStorage);
+    secureLocalStorage.setItem("object", {
+      message: "This is testing of local storage",
+    });
+    secureLocalStorage.setItem("number", 12);
+    secureLocalStorage.setItem("string", "12");
+    secureLocalStorage.setItem("boolean", true);
   }, []);
 
   return (
