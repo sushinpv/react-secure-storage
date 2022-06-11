@@ -17,8 +17,8 @@ const SecureLocalStorage = class {
 
   /**
    * Function to set value to secure local storage
-   * @param key
-   * @param value
+   * @param key to be added
+   * @param value value to be added
    */
   setItem(key: string, value: String | Object | Number | Boolean) {
     let parsedValue = typeof value === "object" ? JSON.stringify(value) : value + "";
@@ -31,12 +31,30 @@ const SecureLocalStorage = class {
 
   /**
    * Function to get value from secure local storage
-   * @param key
+   * @param key to get
    * @returns
    */
   getItem(key: string) {
     let parsedKey = KEY_PREFIX + key;
     return this.localStorageItems[parsedKey] || null;
+  }
+
+  /**
+   * Function to remove item from secure local storage
+   * @param key to be removed
+   */
+  removeItem(key: string) {
+    let parsedKey = KEY_PREFIX + key;
+    this.localStorageItems[parsedKey] = null;
+    localStorage.removeItem(key);
+  }
+
+  /**
+   * Function to clear secure local storage
+   */
+  clear() {
+    this.localStorageItems = {};
+    localStorage.clear();
   }
 };
 

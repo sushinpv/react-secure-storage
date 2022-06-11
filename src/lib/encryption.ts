@@ -29,7 +29,7 @@ const EncryptionService = class {
   decrypt(value: string) {
     try {
       var bytes = AES.decrypt(value, this.secureKey);
-      return bytes.toString(Utf8);
+      return bytes.toString(Utf8) || null;
     } catch (ex) {
       return null;
     }
