@@ -1,6 +1,6 @@
 {
   "name": "react-secure-storage",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "This libraries is used to securely store data in local storage",
   "author": "Sushin Pv",
   "main": "dist/index.js",
@@ -9,6 +9,11 @@
     "url": "git@github.com:sushinpv/react-secure-storage.git"
   },
   "license": "MIT",
+  "keywords": [
+    "react secure local storage",
+    "react",
+    "local storage"
+  ],
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",
