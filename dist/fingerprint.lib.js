@@ -1,6 +1,4 @@
-import murmurhash3_32_gc from "murmurhash-js/murmurhash3_gc"; // let UAParser = require("ua-parser-js");
-// let Detector = require("./vendor/fontdetect");
-// ClientJS prototype which contains all methods.
+import murmurhash3_32_gc from "murmurhash-js/murmurhash3_gc"; // ClientJS prototype which contains all methods.
 
 const ClientJS = class {
   //
