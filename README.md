@@ -87,7 +87,7 @@ You can use the following methods to read and write items to secure local storag
     export  default  App;
 
 
-
+## Build Size ! 7.6KB
 
 ## Whats new ?
 
