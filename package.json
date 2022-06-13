@@ -1,6 +1,6 @@
 {
   "name": "react-secure-storage",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "This libraries is used to securely store data in local storage",
   "author": "Sushin Pv",
   "main": "dist/index.js",
@@ -34,6 +34,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build:lib": "rm -rf dist && NODE_ENV=production babel src/lib --out-dir dist --extensions \".ts,.tsx\"",
+    "build:lib-ts": "rm -rf dist && NODE_ENV=production tsc src/lib/index.ts --outDir dist",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -59,6 +60,8 @@
   "devDependencies": {
     "@babel/cli": "^7.17.10",
     "@babel/core": "^7.18.2",
+    "@babel/plugin-proposal-class-properties": "^7.17.12",
+    "@babel/plugin-transform-classes": "^7.18.4",
     "@babel/polyfill": "^7.12.1",
     "@babel/preset-env": "^7.18.2",
     "@babel/preset-typescript": "^7.17.12",

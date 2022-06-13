@@ -9,10 +9,10 @@ const KEY_PREFIX = "@secure.";
  * object, string, number and Boolean
  */
 const SecureLocalStorage = class {
-  protected localStorageItems: LocalStorageItem = {};
+  private _localStorageItems: LocalStorageItem = {};
 
   constructor() {
-    this.localStorageItems = getAllLocalStorageItems();
+    this._localStorageItems = getAllLocalStorageItems();
   }
 
   /**
@@ -25,7 +25,7 @@ const SecureLocalStorage = class {
     let keyType = typeof value === "object" ? "j" : typeof value === "boolean" ? "b" : typeof value === "number" ? "n" : "s";
     let parsedKeyLocal = KEY_PREFIX + `${keyType}.` + key;
     let parsedKey = KEY_PREFIX + key;
-    if (key != null) this.localStorageItems[parsedKey] = value;
+    if (key != null) this._localStorageItems[parsedKey] = value;
     localStorage.setItem(parsedKeyLocal, encrypt.encrypt(parsedValue));
   }
 
@@ -36,7 +36,7 @@ const SecureLocalStorage = class {
    */
   getItem(key: string) {
     let parsedKey = KEY_PREFIX + key;
-    return this.localStorageItems[parsedKey] || null;
+    return this._localStorageItems[parsedKey] || null;
   }
 
   /**
@@ -45,7 +45,7 @@ const SecureLocalStorage = class {
    */
   removeItem(key: string) {
     let parsedKey = KEY_PREFIX + key;
-    this.localStorageItems[parsedKey] = null;
+    this._localStorageItems[parsedKey] = null;
     localStorage.removeItem(key);
   }
 
@@ -53,7 +53,7 @@ const SecureLocalStorage = class {
    * Function to clear secure local storage
    */
   clear() {
-    this.localStorageItems = {};
+    this._localStorageItems = {};
     localStorage.clear();
   }
 };

@@ -1,96 +1,57 @@
 "use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-
-var _encryption = _interopRequireDefault(require("./encryption"));
-
-var _localStorageHelpers = _interopRequireDefault(require("./localStorageHelpers"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
+exports.__esModule = true;
+var encryption_1 = require("./encryption");
+var localStorageHelpers_1 = require("./localStorageHelpers");
 var KEY_PREFIX = "@secure.";
 /**
  * This version of local storage supports the following data types as it is and other data types will be treated as string
  * object, string, number and Boolean
  */
-
-var SecureLocalStorage = /*#__PURE__*/function () {
-  function SecureLocalStorage() {
-    _classCallCheck(this, SecureLocalStorage);
-
-    _defineProperty(this, "localStorageItems", {});
-
-    this.localStorageItems = (0, _localStorageHelpers.default)();
-  }
-  /**
-   * Function to set value to secure local storage
-   * @param key to be added
-   * @param value value to be added
-   */
-
-
-  _createClass(SecureLocalStorage, [{
-    key: "setItem",
-    value: function setItem(key, value) {
-      var parsedValue = _typeof(value) === "object" ? JSON.stringify(value) : value + "";
-      var keyType = _typeof(value) === "object" ? "j" : typeof value === "boolean" ? "b" : typeof value === "number" ? "n" : "s";
-      var parsedKeyLocal = KEY_PREFIX + "".concat(keyType, ".") + key;
-      var parsedKey = KEY_PREFIX + key;
-      if (key != null) this.localStorageItems[parsedKey] = value;
-      localStorage.setItem(parsedKeyLocal, _encryption.default.encrypt(parsedValue));
+var SecureLocalStorage = /** @class */ (function () {
+    function class_1() {
+        this._localStorageItems = {};
+        this._localStorageItems = (0, localStorageHelpers_1["default"])();
     }
+    /**
+     * Function to set value to secure local storage
+     * @param key to be added
+     * @param value value to be added
+     */
+    class_1.prototype.setItem = function (key, value) {
+        var parsedValue = typeof value === "object" ? JSON.stringify(value) : value + "";
+        var keyType = typeof value === "object" ? "j" : typeof value === "boolean" ? "b" : typeof value === "number" ? "n" : "s";
+        var parsedKeyLocal = KEY_PREFIX + "".concat(keyType, ".") + key;
+        var parsedKey = KEY_PREFIX + key;
+        if (key != null)
+            this._localStorageItems[parsedKey] = value;
+        localStorage.setItem(parsedKeyLocal, encryption_1["default"].encrypt(parsedValue));
+    };
     /**
      * Function to get value from secure local storage
      * @param key to get
      * @returns
      */
-
-  }, {
-    key: "getItem",
-    value: function getItem(key) {
-      var parsedKey = KEY_PREFIX + key;
-      return this.localStorageItems[parsedKey] || null;
-    }
+    class_1.prototype.getItem = function (key) {
+        var parsedKey = KEY_PREFIX + key;
+        return this._localStorageItems[parsedKey] || null;
+    };
     /**
      * Function to remove item from secure local storage
      * @param key to be removed
      */
-
-  }, {
-    key: "removeItem",
-    value: function removeItem(key) {
-      var parsedKey = KEY_PREFIX + key;
-      this.localStorageItems[parsedKey] = null;
-      localStorage.removeItem(key);
-    }
+    class_1.prototype.removeItem = function (key) {
+        var parsedKey = KEY_PREFIX + key;
+        this._localStorageItems[parsedKey] = null;
+        localStorage.removeItem(key);
+    };
     /**
      * Function to clear secure local storage
      */
-
-  }, {
-    key: "clear",
-    value: function clear() {
-      this.localStorageItems = {};
-      localStorage.clear();
-    }
-  }]);
-
-  return SecureLocalStorage;
-}();
-
+    class_1.prototype.clear = function () {
+        this._localStorageItems = {};
+        localStorage.clear();
+    };
+    return class_1;
+}());
 var secureLocalStorage = new SecureLocalStorage();
-var _default = secureLocalStorage;
-exports.default = _default;
+exports["default"] = secureLocalStorage;
