@@ -1,4 +1,4 @@
-"use strict";
+
 exports.__esModule = true;
 var encryption_1 = require("./encryption");
 var localStorageHelpers_1 = require("./localStorageHelpers");
@@ -8,7 +8,7 @@ var KEY_PREFIX = "@secure.";
  * object, string, number and Boolean
  */
 var SecureLocalStorage = /** @class */ (function () {
-    function class_1() {
+    function SecureLocalStorage() {
         this._localStorageItems = {};
         this._localStorageItems = (0, localStorageHelpers_1["default"])();
     }
@@ -17,7 +17,7 @@ var SecureLocalStorage = /** @class */ (function () {
      * @param key to be added
      * @param value value to be added
      */
-    class_1.prototype.setItem = function (key, value) {
+    SecureLocalStorage.prototype.setItem = function (key, value) {
         var parsedValue = typeof value === "object" ? JSON.stringify(value) : value + "";
         var keyType = typeof value === "object" ? "j" : typeof value === "boolean" ? "b" : typeof value === "number" ? "n" : "s";
         var parsedKeyLocal = KEY_PREFIX + "".concat(keyType, ".") + key;
@@ -31,7 +31,7 @@ var SecureLocalStorage = /** @class */ (function () {
      * @param key to get
      * @returns
      */
-    class_1.prototype.getItem = function (key) {
+    SecureLocalStorage.prototype.getItem = function (key) {
         var parsedKey = KEY_PREFIX + key;
         return this._localStorageItems[parsedKey] || null;
     };
@@ -39,7 +39,7 @@ var SecureLocalStorage = /** @class */ (function () {
      * Function to remove item from secure local storage
      * @param key to be removed
      */
-    class_1.prototype.removeItem = function (key) {
+    SecureLocalStorage.prototype.removeItem = function (key) {
         var parsedKey = KEY_PREFIX + key;
         this._localStorageItems[parsedKey] = null;
         localStorage.removeItem(key);
@@ -47,11 +47,11 @@ var SecureLocalStorage = /** @class */ (function () {
     /**
      * Function to clear secure local storage
      */
-    class_1.prototype.clear = function () {
+    SecureLocalStorage.prototype.clear = function () {
         this._localStorageItems = {};
         localStorage.clear();
     };
-    return class_1;
+    return SecureLocalStorage;
 }());
 var secureLocalStorage = new SecureLocalStorage();
 exports["default"] = secureLocalStorage;
