@@ -34,6 +34,10 @@ The user specific Secure key can be configured using  .env file as
 
     SECURE_LOCAL_STORAGE_HASH_KEY=xxxxxxxxxxxxxxxx
 
+or
+
+	REACT_APP_SECURE_LOCAL_STORAGE_HASH_KEY=xxxxxxxxx
+
 
 
 
