@@ -1,12 +1,9 @@
-export interface LocalStorageItem {
-  [key: string]: Object | String | Number | null;
-}
-
 /**
  * This version of local storage supports the following data types as it is and other data types will be treated as string
  * object, string, number and Boolean
+ * To change the custom secure key, Please add `SECURE_LOCAL_STORAGE_HASH_KEY` or `REACT_APP_SECURE_LOCAL_STORAGE_HASH_KEY` to .env and change the value
  */
-export declare class SecureLocalStorage {
+declare class SecureLocalStorage {
   // private _localStorageItems;
   constructor();
 

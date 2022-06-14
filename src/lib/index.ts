@@ -1,6 +1,6 @@
+import { LocalStorageItem } from "./coreTypes";
 import encrypt from "./encryption";
 import getAllLocalStorageItems from "./localStorageHelpers";
-import { LocalStorageItem } from "./types";
 
 const KEY_PREFIX = "@secure.";
 

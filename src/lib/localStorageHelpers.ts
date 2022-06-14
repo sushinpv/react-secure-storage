@@ -1,5 +1,5 @@
+import { LocalStorageItem } from "./coreTypes";
 import encryptService from "./encryption";
-import { LocalStorageItem } from "./types";
 
 /**
  * Function to preload all the local storage data

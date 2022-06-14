@@ -95,4 +95,6 @@ You can use the following methods to read and write items to secure local storag
 
 ## Whats new ?
 
+Added proper type definition for the entire package
+
 Releasing the first version of react secure local storage, which supports `setItem`, `getItem`, `removeItem` and `clear` functions 
