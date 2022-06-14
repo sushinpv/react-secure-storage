@@ -1,9 +1,10 @@
 {
   "name": "react-secure-storage",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "This libraries is used to securely store data in local storage",
   "author": "Sushin Pv",
   "main": "dist/index.js",
+  "types": "dist/types.d.ts",
   "repository": {
     "type": "git",
     "url": "git@github.com:sushinpv/react-secure-storage.git"
@@ -34,8 +35,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build:lib": "rm -rf dist && NODE_ENV=production babel src/lib --out-dir dist --extensions \".ts,.tsx\"",
-    "build:lib-ts": "rm -rf dist && NODE_ENV=production tsc src/lib/index.ts --outDir dist",
+    "build:lib": "rm -rf dist && NODE_ENV=production babel src/lib --out-dir dist --extensions \".ts,.tsx\" && rm dist/types.d.js && cp src/lib/types.d.ts dist/",
+    "build:lib-ts": "rm -rf dist && NODE_ENV=production tsc src/lib/index.ts --outDir dist && rm dist/types.d.js && cp src/lib/types.d.ts dist/",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

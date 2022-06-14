@@ -1,6 +1,6 @@
 import encrypt from "./encryption";
 import getAllLocalStorageItems from "./localStorageHelpers";
-import { LocalStorageItem } from "./types";
+import { LocalStorageItem, SecureLocalStorageClass } from "./types";
 
 const KEY_PREFIX = "@secure.";
 
@@ -8,7 +8,7 @@ const KEY_PREFIX = "@secure.";
  * This version of local storage supports the following data types as it is and other data types will be treated as string
  * object, string, number and Boolean
  */
-const SecureLocalStorage = class {
+class SecureLocalStorage implements SecureLocalStorageClass {
   private _localStorageItems: LocalStorageItem = {};
 
   constructor() {
@@ -56,7 +56,7 @@ const SecureLocalStorage = class {
     this._localStorageItems = {};
     localStorage.clear();
   }
-};
+}
 
 const secureLocalStorage = new SecureLocalStorage();
 

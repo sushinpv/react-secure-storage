@@ -8,7 +8,7 @@ const KEY_PREFIX = "@secure.";
  * object, string, number and Boolean
  */
 
-const SecureLocalStorage = class SecureLocalStorage {
+class SecureLocalStorage {
   constructor() {
     _defineProperty(this, "_localStorageItems", {});
 
@@ -61,6 +61,7 @@ const SecureLocalStorage = class SecureLocalStorage {
     localStorage.clear();
   }
 
-};
+}
+
 const secureLocalStorage = new SecureLocalStorage();
 export default secureLocalStorage;
