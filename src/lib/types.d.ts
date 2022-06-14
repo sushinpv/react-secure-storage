@@ -12,14 +12,14 @@ declare class SecureLocalStorage {
    * @param key to be added
    * @param value value to be added
    */
-  setItem(key: string, value: String | Object | Number | Boolean): void;
+  setItem(key: string, value: string | object | number | boolean): void;
 
   /**
    * Function to get value from secure local storage
    * @param key to get
    * @returns
    */
-  getItem(key: string): String | Object | Number | Boolean | null;
+  getItem(key: string): string | object | number | boolean | null;
 
   /**
    * Function to remove item from secure local storage

@@ -20,7 +20,7 @@ class SecureLocalStorage {
    * @param key to be added
    * @param value value to be added
    */
-  setItem(key: string, value: String | Object | Number | Boolean) {
+  setItem(key: string, value: string | object | number | boolean) {
     let parsedValue = typeof value === "object" ? JSON.stringify(value) : value + "";
     let keyType = typeof value === "object" ? "j" : typeof value === "boolean" ? "b" : typeof value === "number" ? "n" : "s";
     let parsedKeyLocal = KEY_PREFIX + `${keyType}.` + key;
@@ -34,7 +34,7 @@ class SecureLocalStorage {
    * @param key to get
    * @returns
    */
-  getItem(key: string) {
+  getItem(key: string): string | object | number | boolean | null {
     let parsedKey = KEY_PREFIX + key;
     return this._localStorageItems[parsedKey] || null;
   }

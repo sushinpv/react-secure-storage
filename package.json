@@ -1,6 +1,6 @@
 {
   "name": "react-secure-storage",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "This libraries is used to securely store data in local storage",
   "author": "Sushin Pv",
   "main": "dist/index.js",

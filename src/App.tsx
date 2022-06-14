@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import secureLocalStorage from "../dist";
+import secureLocalStorage from "./lib";
 import logo from "./logo.svg";
 import "./App.css";
 

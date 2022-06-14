@@ -1,3 +1,3 @@
 export interface LocalStorageItem {
-  [key: string]: Object | String | Number | null;
+  [key: string]: string | object | number | boolean | null;
 }
