@@ -1,5 +1,5 @@
 import { LocalStorageItem } from "./coreTypes";
-import encryptService from "./encryption";
+import EncryptionService from "./encryption";
 
 /**
  * Function to preload all the local storage data
@@ -7,12 +7,13 @@ import encryptService from "./encryption";
  */
 const getAllLocalStorageItems = () => {
   const localStorageItems: LocalStorageItem = {};
-  if (typeof window !== "undefined")
+  if (typeof window !== "undefined") {
+    const encrypt = new EncryptionService();
     for (const [key, value] of Object.entries(localStorage)) {
       if (key.startsWith("@secure.")) {
         let keyType = key.replace("@secure.", "")[0];
         let parsedKey = key.replace(/[.][bjns][.]/, ".");
-        let decryptedValue = encryptService.decrypt(value);
+        let decryptedValue = encrypt.decrypt(value);
         let parsedValue = null;
         if (decryptedValue != null)
           switch (keyType) {
@@ -31,6 +32,7 @@ const getAllLocalStorageItems = () => {
         localStorageItems[parsedKey] = parsedValue;
       }
     }
+  }
   return localStorageItems;
 };
 

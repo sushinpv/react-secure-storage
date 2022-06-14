@@ -1,1 +1,1 @@
-export {};
+"use strict";

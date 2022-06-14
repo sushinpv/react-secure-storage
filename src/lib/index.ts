@@ -1,5 +1,5 @@
 import { LocalStorageItem } from "./coreTypes";
-import encrypt from "./encryption";
+import EncryptionService from "./encryption";
 import getAllLocalStorageItems from "./localStorageHelpers";
 
 const KEY_PREFIX = "@secure.";
@@ -26,6 +26,7 @@ class SecureLocalStorage {
     let parsedKeyLocal = KEY_PREFIX + `${keyType}.` + key;
     let parsedKey = KEY_PREFIX + key;
     if (key != null) this._localStorageItems[parsedKey] = value;
+    const encrypt = new EncryptionService();
     localStorage.setItem(parsedKeyLocal, encrypt.encrypt(parsedValue));
   }
 

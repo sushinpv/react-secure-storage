@@ -97,4 +97,6 @@ You can use the following methods to read and write items to secure local storag
 
 Added proper type definition for the entire package
 
+Added support for older es versions and nextjs
+
 Releasing the first version of react secure local storage, which supports `setItem`, `getItem`, `removeItem` and `clear` functions 

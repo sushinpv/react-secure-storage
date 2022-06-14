@@ -6,7 +6,7 @@ import getFingerprint from "./fingerprint";
  * EncryptionService
  */
 const EncryptionService = class {
-  private secureKey: string = "";
+  secureKey: string = "";
 
   constructor() {
     this.secureKey = getFingerprint();
@@ -36,6 +36,4 @@ const EncryptionService = class {
   }
 };
 
-const encryptService = new EncryptionService();
-
-export default encryptService;
+export default EncryptionService;
