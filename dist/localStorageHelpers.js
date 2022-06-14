@@ -1,9 +1,9 @@
 import encryptService from "./encryption";
-
 /**
  * Function to preload all the local storage data
  * @returns
  */
+
 const getAllLocalStorageItems = () => {
   const localStorageItems = {};
   if (typeof window !== "undefined") for (const [key, value] of Object.entries(localStorage)) {
