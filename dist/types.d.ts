@@ -2,15 +2,6 @@ export interface LocalStorageItem {
   [key: string]: Object | String | Number | null;
 }
 
-export declare class SecureLocalStorageClass {
-  // private _localStorageItems;
-  constructor();
-  setItem(key: string, value: String | Object | Number | Boolean): void;
-  getItem(key: string): String | Object | Number | Boolean | null;
-  removeItem(key: string): void;
-  clear(): void;
-}
-
 /**
  * This version of local storage supports the following data types as it is and other data types will be treated as string
  * object, string, number and Boolean
@@ -44,3 +35,10 @@ export declare class SecureLocalStorage {
    */
   clear(): void;
 }
+
+/**
+ * Create an instance of secureLocalStorage
+ */
+const secureLocalStorage = new SecureLocalStorage();
+
+export default secureLocalStorage;
