@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import clientJS from "./fingerprint.lib";
 
 const HASH_KEY = "E86E2612010258B35137";
@@ -7,8 +8,14 @@ const HASH_KEY = "E86E2612010258B35137";
  * @returns
  */
 const getFingerprint = () => {
-  if (typeof window === "undefined") return process.env.SECURE_LOCAL_STORAGE_HASH_KEY || process.env.REACT_APP_SECURE_LOCAL_STORAGE_HASH_KEY || HASH_KEY;
-  return clientJS.getFingerprint() + (process.env.SECURE_LOCAL_STORAGE_HASH_KEY || process.env.REACT_APP_SECURE_LOCAL_STORAGE_HASH_KEY || HASH_KEY);
+  //Load the custom HASH KEY from process.env
+  let HASH_KEY_CUSTOM = process.env.SECURE_LOCAL_STORAGE_HASH_KEY || process.env.REACT_APP_SECURE_LOCAL_STORAGE_HASH_KEY || HASH_KEY;
+
+  // If Cypress is installed, then load env from cypress, adding support for cypress
+  if (typeof Cypress != "undefined") HASH_KEY_CUSTOM = Cypress.env("SECURE_LOCAL_STORAGE_HASH_KEY") || Cypress.env("REACT_APP_SECURE_LOCAL_STORAGE_HASH_KEY") || HASH_KEY_CUSTOM;
+
+  if (typeof window === "undefined") return HASH_KEY_CUSTOM;
+  return clientJS.getFingerprint() + HASH_KEY_CUSTOM;
 };
 
 export default getFingerprint;

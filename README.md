@@ -38,7 +38,7 @@ or
 
 	REACT_APP_SECURE_LOCAL_STORAGE_HASH_KEY=xxxxxxxxx
 
-
+### Added Support for Cypress.env, The version >= 1.0.15, added support for Cypress
 
 
 ## How to use
@@ -94,6 +94,8 @@ You can use the following methods to read and write items to secure local storag
 ## Build Size ! 7.6KB
 
 ## Whats new ?
+
+Added support for `Cypress`
 
 Added proper type definition for the entire package
 
