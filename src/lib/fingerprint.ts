@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import clientJS from "./fingerprint.lib";
 
 const HASH_KEY = "E86E2612010258B35137";

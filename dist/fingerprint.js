@@ -9,6 +9,7 @@ var _fingerprint = _interopRequireDefault(require("./fingerprint.lib"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+/* eslint-disable no-undef */
 var HASH_KEY = "E86E2612010258B35137";
 /**
  * Function to get browser finger print
