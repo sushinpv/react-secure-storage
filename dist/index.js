@@ -11,8 +11,6 @@ var _localStorageHelpers = _interopRequireDefault(require("./localStorageHelpers
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -21,11 +19,34 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+
 var KEY_PREFIX = "@secure.";
+/**
+ * Function to return datatype of the value we stored
+ * @param value
+ * @returns
+ */
+
+var getDataType = function getDataType(value) {
+  return _typeof(value) === "object" ? "j" : typeof value === "boolean" ? "b" : typeof value === "number" ? "n" : "s";
+};
+/**
+ * Function to create local storage key
+ * @param key
+ * @param value
+ */
+
+
+var getLocalKey = function getLocalKey(key, value) {
+  var keyType = getDataType(value);
+  return KEY_PREFIX + "".concat(keyType, ".") + key;
+};
 /**
  * This version of local storage supports the following data types as it is and other data types will be treated as string
  * object, string, number and Boolean
  */
+
 
 var SecureLocalStorage = /*#__PURE__*/function () {
   function SecureLocalStorage() {
@@ -46,8 +67,7 @@ var SecureLocalStorage = /*#__PURE__*/function () {
     key: "setItem",
     value: function setItem(key, value) {
       var parsedValue = _typeof(value) === "object" ? JSON.stringify(value) : value + "";
-      var keyType = _typeof(value) === "object" ? "j" : typeof value === "boolean" ? "b" : typeof value === "number" ? "n" : "s";
-      var parsedKeyLocal = KEY_PREFIX + "".concat(keyType, ".") + key;
+      var parsedKeyLocal = getLocalKey(key, value);
       var parsedKey = KEY_PREFIX + key;
       if (key != null) this._localStorageItems[parsedKey] = value;
       var encrypt = new _encryption.default();
@@ -74,8 +94,10 @@ var SecureLocalStorage = /*#__PURE__*/function () {
     key: "removeItem",
     value: function removeItem(key) {
       var parsedKey = KEY_PREFIX + key;
-      this._localStorageItems[parsedKey] = null;
-      localStorage.removeItem(key);
+      var value = this._localStorageItems[parsedKey];
+      var parsedKeyLocal = getLocalKey(key, value);
+      if (this._localStorageItems[parsedKey] !== undefined) delete this._localStorageItems[parsedKey];
+      localStorage.removeItem(parsedKeyLocal);
     }
     /**
      * Function to clear secure local storage

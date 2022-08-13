@@ -95,6 +95,8 @@ You can use the following methods to read and write items to secure local storag
 
 ## Whats new ?
 
+Resolved https://github.com/sushinpv/react-secure-storage/issues/2
+
 Added support for `Cypress`
 
 Added proper type definition for the entire package
