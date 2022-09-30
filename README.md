@@ -104,3 +104,5 @@ Added proper type definition for the entire package
 Added support for older es versions and nextjs
 
 Releasing the first version of react secure local storage, which supports `setItem`, `getItem`, `removeItem` and `clear` functions 
+
+For local testing the library make sure you are installing the `react-scripts` by using `npm i react-scripts` or `yarn add react-scripts`

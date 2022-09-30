@@ -1,6 +1,6 @@
 {
   "name": "react-secure-storage",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "description": "This libraries is used to securely store data in local storage",
   "author": "Sushin Pv",
   "main": "dist/index.js",
@@ -58,7 +58,6 @@
     "@types/murmurhash-js": "^1.0.3",
     "@types/ua-parser-js": "^0.7.36",
     "cypress": "^10.3.0",
-    "react-scripts": "5.0.1",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
     "typescript": "^4.7.3",
