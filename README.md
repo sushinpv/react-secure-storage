@@ -1,3 +1,5 @@
+[![downloads](https://img.shields.io/npm/dt/clone.svg)](http://npm-stat.com/charts.html?package=react-secure-storage)
+
 ## The problem statement!
 
 Most of the people save data into local storage, Is this a safe method to store ? No! Local storage writes the data as a plan string and any one who has the access to the device can read this data and manipulate. 
