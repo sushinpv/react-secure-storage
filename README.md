@@ -1,4 +1,4 @@
-[![downloads](https://img.shields.io/npm/dt/clone.svg)](http://npm-stat.com/charts.html?package=react-secure-storage)
+[![downloads](https://img.shields.io/npm/dm/react-secure-storage.svg)](http://npm-stat.com/charts.html?package=react-secure-storage)
 
 ## The problem statement!
 
