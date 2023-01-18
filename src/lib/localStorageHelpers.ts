@@ -1,6 +1,8 @@
 import { LocalStorageItem } from "./coreTypes";
 import EncryptionService from "./encryption";
 
+const KEY_PREFIX = process.env.REACT_APP_SECURE_LOCAL_STORAGE_PREFIX || process.env.SECURE_LOCAL_STORAGE_PREFIX || "@secure.";
+
 /**
  * Function to preload all the local storage data
  * @returns
@@ -10,8 +12,8 @@ const getAllLocalStorageItems = () => {
   if (typeof window !== "undefined") {
     const encrypt = new EncryptionService();
     for (const [key, value] of Object.entries(localStorage)) {
-      if (key.startsWith("@secure.")) {
-        let keyType = key.replace("@secure.", "")[0];
+      if (key.startsWith(KEY_PREFIX)) {
+        let keyType = key.replace(KEY_PREFIX, "")[0];
         let parsedKey = key.replace(/[.][bjns][.]/, ".");
         let decryptedValue = encrypt.decrypt(value);
         let parsedValue = null;

@@ -40,6 +40,14 @@ or
 
 	REACT_APP_SECURE_LOCAL_STORAGE_HASH_KEY=xxxxxxxxx
 
+
+Secure local storage prefix can be configured using .env file as
+
+	SECURE_LOCAL_STORAGE_PREFIX=xxxxxxx
+or
+
+	REACT_APP_SECURE_LOCAL_STORAGE_PREFIX=xxxxxxx
+
 ### Added Support for Cypress.env, The version >= 1.0.15, added support for Cypress
 
 

@@ -2,7 +2,7 @@ import { LocalStorageItem } from "./coreTypes";
 import EncryptionService from "./encryption";
 import getAllLocalStorageItems from "./localStorageHelpers";
 
-const KEY_PREFIX = "@secure.";
+const KEY_PREFIX = process.env.REACT_APP_SECURE_LOCAL_STORAGE_PREFIX || process.env.SECURE_LOCAL_STORAGE_PREFIX || "@secure.";
 
 /**
  * Function to return datatype of the value we stored
