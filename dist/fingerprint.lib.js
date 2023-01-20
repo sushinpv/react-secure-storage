@@ -95,7 +95,7 @@ var ClientJS = /*#__PURE__*/function () {
       var pluginsList = "";
 
       for (var i = 0; i < navigator.plugins.length; i++) {
-        if (i == navigator.plugins.length - 1) {
+        if (i === navigator.plugins.length - 1) {
           pluginsList += navigator.plugins[i].name;
         } else {
           pluginsList += navigator.plugins[i].name + ", ";
