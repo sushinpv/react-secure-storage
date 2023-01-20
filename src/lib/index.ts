@@ -2,7 +2,7 @@ import { LocalStorageItem } from "./coreTypes";
 import EncryptionService from "./encryption";
 import getAllLocalStorageItems from "./localStorageHelpers";
 
-const KEY_PREFIX = "@secure.";
+const KEY_PREFIX = process.env.REACT_APP_SECURE_LOCAL_STORAGE_PREFIX || process.env.SECURE_LOCAL_STORAGE_PREFIX || "@secure.";
 
 /**
  * This version of local storage supports the following data types as it is and other data types will be treated as string
