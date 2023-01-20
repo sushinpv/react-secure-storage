@@ -105,6 +105,8 @@ You can use the following methods to read and write items to secure local storag
 
 ## Whats new ?
 
+Added support for updating Local Storage prefix, Now this can be updated using .env
+
 Resolved https://github.com/sushinpv/react-secure-storage/issues/2
 
 Added support for `Cypress`
