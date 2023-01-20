@@ -7,6 +7,8 @@ exports.default = void 0;
 
 var _encryption = _interopRequireDefault(require("./encryption"));
 
+var _utils = require("./utils");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
@@ -21,10 +23,12 @@ function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Sy
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
+var KEY_PREFIX = (0, _utils.getSecurePrefix)();
 /**
  * Function to preload all the local storage data
  * @returns
  */
+
 var getAllLocalStorageItems = function getAllLocalStorageItems() {
   var localStorageItems = {};
 
@@ -36,8 +40,8 @@ var getAllLocalStorageItems = function getAllLocalStorageItems() {
           key = _Object$entries$_i[0],
           value = _Object$entries$_i[1];
 
-      if (key.startsWith("@secure.")) {
-        var keyType = key.replace("@secure.", "")[0];
+      if (key.startsWith(KEY_PREFIX)) {
+        var keyType = key.replace(KEY_PREFIX, "")[0];
         var parsedKey = key.replace(/[.][bjns][.]/, ".");
         var decryptedValue = encrypt.decrypt(value);
         var parsedValue = null;

@@ -1,7 +1,8 @@
 import { LocalStorageItem } from "./coreTypes";
 import EncryptionService from "./encryption";
+import { getSecurePrefix } from "./utils";
 
-const KEY_PREFIX = process.env.REACT_APP_SECURE_LOCAL_STORAGE_PREFIX || process.env.SECURE_LOCAL_STORAGE_PREFIX || "@secure.";
+const KEY_PREFIX = getSecurePrefix();
 
 /**
  * Function to preload all the local storage data
