@@ -117,4 +117,11 @@ Added support for older es versions and nextjs
 
 Releasing the first version of react secure local storage, which supports `setItem`, `getItem`, `removeItem` and `clear` functions 
 
-For local testing the library make sure you are installing the `react-scripts` by using `npm i react-scripts` or `yarn add react-scripts`
+## How do I test this library on my local system & How do I contribute ?
+
+For local testing the library make sure you are installing the `react-scripts` by using `npm i react-scripts` or `yarn add react-scripts`. 
+The react-scripts is removed due to vulnerability issue which is highlighted in here : https://github.com/sushinpv/react-secure-storage/issues/3
+
+To contribute on the library, make sure you are creating a development branch for your fix as `dev/{feature/fix}` and create a PR to master branch.
+
+Before creating the PR, Please make sure to remove the `react-scripts` from the `package.json`. and you are creating a production build for the library by running `yarn build:lib`
