@@ -103,7 +103,13 @@ You can use the following methods to read and write items to secure local storag
 
 ## Build Size ! 7.6KB
 
-## Whats new ?
+## Whats new in 1.1.0?
+
+Secure token returning null when the browser resizes problem was fixed. This was previously included as a security feature, but in the most recent update, it was removed. This was covered in the ensuing issue: https://github.com/sushinpv/react-secure-storage/issues/9
+
+Now that we have included the browser hostname while establishing the secure key, it is more unique. This will guarantee that each website's key is distinct.
+
+## Whats new | Previous?
 
 Added support for updating Local Storage prefix, Now this can be updated using .env
 

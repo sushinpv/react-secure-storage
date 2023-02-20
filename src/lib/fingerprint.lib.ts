@@ -21,8 +21,9 @@ const ClientJS = class {
     let systemLanguage = this.getSystemLanguage();
     let cookies = this.isCookie();
     let canvasPrint = this.getCanvasPrint();
+    let hostName = window.location.hostname;
 
-    let key = userAgent + bar + screenPrint + bar + pluginList + bar + fontList + bar + localStorage + bar + sessionStorage + bar + timeZone + bar + language + bar + systemLanguage + bar + cookies + bar + canvasPrint;
+    let key = userAgent + bar + hostName + bar + screenPrint + bar + pluginList + bar + fontList + bar + localStorage + bar + sessionStorage + bar + timeZone + bar + language + bar + systemLanguage + bar + cookies + bar + canvasPrint;
     let seed = 256;
 
     return murmurhash3_32_gc(key, seed);
@@ -34,7 +35,8 @@ const ClientJS = class {
 
   // Get Screen Print.  Return a string containing screen information.
   getScreenPrint() {
-    return "Current Resolution: " + this.getCurrentResolution() + ", Available Resolution: " + this.getAvailableResolution() + ", Color Depth: " + this.getColorDepth() + ", Device XDPI: " + this.getDeviceXDPI() + ", Device YDPI: " + this.getDeviceYDPI();
+    // "Current Resolution: " + this.getCurrentResolution() +", Available Resolution: " + this.getAvailableResolution() +
+    return "Color Depth: " + this.getColorDepth() + ", Device XDPI: " + this.getDeviceXDPI() + ", Device YDPI: " + this.getDeviceYDPI();
   }
 
   // Get Color Depth.  Return a string containing the color depth.
