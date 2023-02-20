@@ -40,7 +40,8 @@ var ClientJS = /*#__PURE__*/function () {
       var systemLanguage = this.getSystemLanguage();
       var cookies = this.isCookie();
       var canvasPrint = this.getCanvasPrint();
-      var key = userAgent + bar + screenPrint + bar + pluginList + bar + fontList + bar + localStorage + bar + sessionStorage + bar + timeZone + bar + language + bar + systemLanguage + bar + cookies + bar + canvasPrint;
+      var hostName = window.location.hostname;
+      var key = userAgent + bar + hostName + bar + screenPrint + bar + pluginList + bar + fontList + bar + localStorage + bar + sessionStorage + bar + timeZone + bar + language + bar + systemLanguage + bar + cookies + bar + canvasPrint;
       var seed = 256;
       return (0, _murmurhash3_gc.default)(key, seed);
     } //
@@ -51,7 +52,8 @@ var ClientJS = /*#__PURE__*/function () {
   }, {
     key: "getScreenPrint",
     value: function getScreenPrint() {
-      return "Current Resolution: " + this.getCurrentResolution() + ", Available Resolution: " + this.getAvailableResolution() + ", Color Depth: " + this.getColorDepth() + ", Device XDPI: " + this.getDeviceXDPI() + ", Device YDPI: " + this.getDeviceYDPI();
+      // "Current Resolution: " + this.getCurrentResolution() +", Available Resolution: " + this.getAvailableResolution() +
+      return "Color Depth: " + this.getColorDepth() + ", Device XDPI: " + this.getDeviceXDPI() + ", Device YDPI: " + this.getDeviceYDPI();
     } // Get Color Depth.  Return a string containing the color depth.
 
   }, {
