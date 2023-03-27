@@ -1,4 +1,5 @@
 import murmurhash3_32_gc from "murmurhash-js/murmurhash3_gc";
+import { FINGERPRINT_KEYS, getDisabledKeys } from "./utils";
 
 // ClientJS prototype which contains all methods.
 const ClientJS = class {
@@ -10,20 +11,45 @@ const ClientJS = class {
   getFingerprint() {
     let bar = "|";
 
-    let userAgent = navigator.userAgent;
-    let screenPrint = this.getScreenPrint();
-    let pluginList = this.getPlugins();
-    let fontList = this.getFonts();
-    let localStorage = this.isLocalStorage();
-    let sessionStorage = this.isSessionStorage();
-    let timeZone = this.getTimeZone();
-    let language = this.getLanguage();
-    let systemLanguage = this.getSystemLanguage();
-    let cookies = this.isCookie();
-    let canvasPrint = this.getCanvasPrint();
-    let hostName = window.location.hostname;
-
-    let key = userAgent + bar + hostName + bar + screenPrint + bar + pluginList + bar + fontList + bar + localStorage + bar + sessionStorage + bar + timeZone + bar + language + bar + systemLanguage + bar + cookies + bar + canvasPrint;
+    const disabledKeys = getDisabledKeys();
+    let key = "";
+    if (!disabledKeys.includes(FINGERPRINT_KEYS.USERAGENT)) {
+      key += navigator.userAgent + bar;
+    }
+    if (!disabledKeys.includes(FINGERPRINT_KEYS.HOSTNAME)) {
+      key += window.location.hostname + bar;
+    }
+    if (!disabledKeys.includes(FINGERPRINT_KEYS.SCREEN_PRINT)) {
+      key += this.getScreenPrint() + bar;
+    }
+    if (!disabledKeys.includes(FINGERPRINT_KEYS.PLUGINS)) {
+      key += this.getPlugins() + bar;
+    }
+    if (!disabledKeys.includes(FINGERPRINT_KEYS.FONTS)) {
+      key += this.getFonts() + bar;
+    }
+    if (!disabledKeys.includes(FINGERPRINT_KEYS.LOCAL_STORAGE)) {
+      key += this.isLocalStorage() + bar;
+    }
+    if (!disabledKeys.includes(FINGERPRINT_KEYS.SESSION_STORAGE)) {
+      key += this.isSessionStorage() + bar;
+    }
+    if (!disabledKeys.includes(FINGERPRINT_KEYS.TIMEZONE)) {
+      key += this.getTimeZone() + bar;
+    }
+    if (!disabledKeys.includes(FINGERPRINT_KEYS.LANGUAGE)) {
+      key += this.getLanguage() + bar;
+    }
+    if (!disabledKeys.includes(FINGERPRINT_KEYS.SYSTEM_LANGUAGE)) {
+      key += this.getSystemLanguage() + bar;
+    }
+    if (!disabledKeys.includes(FINGERPRINT_KEYS.COOKIE)) {
+      key += this.isCookie() + bar;
+    }
+    if (!disabledKeys.includes(FINGERPRINT_KEYS.CANVAS)) {
+      key += this.getCanvasPrint();
+    }
+    if (key.endsWith(bar)) key = key.substring(0, key.length - 1);
     let seed = 256;
 
     return murmurhash3_32_gc(key, seed);
