@@ -70,7 +70,18 @@ You can use the following methods to read and write items to secure local storag
 |`removeItem(key)`          | To remove specified key from secure local storage|  |
 |`clear()`          | Removed all data from secure local storage|  |
 
+## To disable properties from key generation
 
+If you wish to disable any of the key generation property, You can do it as below
+
+	SECURE_LOCAL_STORAGE_DISABLED_KEYS=ScreenPrint|Plugins
+or
+
+	REACT_APP_SECURE_LOCAL_STORAGE_DISABLED_KEYS=ScreenPrint|Plugins
+
+Here is the list of all the supported values `UserAgent|ScreenPrint|Plugins|Fonts|LocalStorage|SessionStorage|TimeZone|Language|SystemLanguage|Cookie|Canvas|Hostname`
+
+>`Here we strongly recommend you to not to disable any of the properties as more properties you have, more unique the browser fingerprint will be!`
 
 
 ## Sample Code
@@ -102,6 +113,10 @@ You can use the following methods to read and write items to secure local storag
 
 
 ## Build Size ! 7.6KB
+
+## Whats new in 1.2.0?
+
+Now you can disable individual fingerprint generation properties, This is discussed in the following enhancement https://github.com/sushinpv/react-secure-storage/issues/14
 
 ## Whats new in 1.1.0?
 

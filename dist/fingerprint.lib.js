@@ -7,6 +7,8 @@ exports.default = void 0;
 
 var _murmurhash3_gc = _interopRequireDefault(require("murmurhash-js/murmurhash3_gc"));
 
+var _utils = require("./utils");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -29,19 +31,58 @@ var ClientJS = /*#__PURE__*/function () {
     // Get Fingerprint.  Return a 32-bit integer representing the browsers fingerprint.
     function getFingerprint() {
       var bar = "|";
-      var userAgent = navigator.userAgent;
-      var screenPrint = this.getScreenPrint();
-      var pluginList = this.getPlugins();
-      var fontList = this.getFonts();
-      var localStorage = this.isLocalStorage();
-      var sessionStorage = this.isSessionStorage();
-      var timeZone = this.getTimeZone();
-      var language = this.getLanguage();
-      var systemLanguage = this.getSystemLanguage();
-      var cookies = this.isCookie();
-      var canvasPrint = this.getCanvasPrint();
-      var hostName = window.location.hostname;
-      var key = userAgent + bar + hostName + bar + screenPrint + bar + pluginList + bar + fontList + bar + localStorage + bar + sessionStorage + bar + timeZone + bar + language + bar + systemLanguage + bar + cookies + bar + canvasPrint;
+      var disabledKeys = (0, _utils.getDisabledKeys)();
+      var key = "";
+
+      if (!disabledKeys.includes(_utils.FINGERPRINT_KEYS.USERAGENT)) {
+        key += navigator.userAgent + bar;
+      }
+
+      if (!disabledKeys.includes(_utils.FINGERPRINT_KEYS.HOSTNAME)) {
+        key += window.location.hostname + bar;
+      }
+
+      if (!disabledKeys.includes(_utils.FINGERPRINT_KEYS.SCREEN_PRINT)) {
+        key += this.getScreenPrint() + bar;
+      }
+
+      if (!disabledKeys.includes(_utils.FINGERPRINT_KEYS.PLUGINS)) {
+        key += this.getPlugins() + bar;
+      }
+
+      if (!disabledKeys.includes(_utils.FINGERPRINT_KEYS.FONTS)) {
+        key += this.getFonts() + bar;
+      }
+
+      if (!disabledKeys.includes(_utils.FINGERPRINT_KEYS.LOCAL_STORAGE)) {
+        key += this.isLocalStorage() + bar;
+      }
+
+      if (!disabledKeys.includes(_utils.FINGERPRINT_KEYS.SESSION_STORAGE)) {
+        key += this.isSessionStorage() + bar;
+      }
+
+      if (!disabledKeys.includes(_utils.FINGERPRINT_KEYS.TIMEZONE)) {
+        key += this.getTimeZone() + bar;
+      }
+
+      if (!disabledKeys.includes(_utils.FINGERPRINT_KEYS.LANGUAGE)) {
+        key += this.getLanguage() + bar;
+      }
+
+      if (!disabledKeys.includes(_utils.FINGERPRINT_KEYS.SYSTEM_LANGUAGE)) {
+        key += this.getSystemLanguage() + bar;
+      }
+
+      if (!disabledKeys.includes(_utils.FINGERPRINT_KEYS.COOKIE)) {
+        key += this.isCookie() + bar;
+      }
+
+      if (!disabledKeys.includes(_utils.FINGERPRINT_KEYS.CANVAS)) {
+        key += this.getCanvasPrint();
+      }
+
+      if (key.endsWith(bar)) key = key.substring(0, key.length - 1);
       var seed = 256;
       return (0, _murmurhash3_gc.default)(key, seed);
     } //
