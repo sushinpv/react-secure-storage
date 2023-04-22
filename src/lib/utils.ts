@@ -1,10 +1,11 @@
+import envHelper from "./envHelper";
+
 /**
  * Function which is used to get the secure prefix
  * @returns
  */
 export const getSecurePrefix = (): string => {
-  let KEY_PREFIX = process.env.SECURE_LOCAL_STORAGE_PREFIX || process.env.REACT_APP_SECURE_LOCAL_STORAGE_PREFIX || "@secure.";
-  if (typeof Cypress != "undefined") KEY_PREFIX = Cypress.env("SECURE_LOCAL_STORAGE_PREFIX") || Cypress.env("REACT_APP_SECURE_LOCAL_STORAGE_PREFIX") || KEY_PREFIX;
+  let KEY_PREFIX = envHelper.getEnvValue("SECURE_LOCAL_STORAGE_PREFIX") || "@secure.";
   if (!KEY_PREFIX.endsWith(".")) return KEY_PREFIX + ".";
   return KEY_PREFIX;
 };
@@ -29,8 +30,7 @@ export const FINGERPRINT_KEYS = {
  * @returns
  */
 export const getDisabledKeys = (): string[] => {
-  let DISABLED_KEYS = process.env.SECURE_LOCAL_STORAGE_DISABLED_KEYS || process.env.REACT_APP_SECURE_LOCAL_STORAGE_DISABLED_KEYS || "";
-  if (typeof Cypress != "undefined") DISABLED_KEYS = Cypress.env("SECURE_LOCAL_STORAGE_DISABLED_KEYS") || Cypress.env("REACT_APP_SECURE_LOCAL_STORAGE_DISABLED_KEYS") || DISABLED_KEYS;
+  let DISABLED_KEYS = envHelper.getEnvValue("SECURE_LOCAL_STORAGE_DISABLED_KEYS") || "";
   if (DISABLED_KEYS === "") return [];
 
   const allOptions = [

@@ -36,23 +36,22 @@ The user specific Secure key can be configured using  .env file as
 
     SECURE_LOCAL_STORAGE_HASH_KEY=xxxxxxxxx
 
-or
-
-	REACT_APP_SECURE_LOCAL_STORAGE_HASH_KEY=xxxxxxxxx
-
-or 
-
-	VITE_SECURE_LOCAL_STORAGE_HASH_KEY=xxxxxxxxx
-
 
 Secure local storage prefix can be configured using .env file as
 
 	SECURE_LOCAL_STORAGE_PREFIX=xxxxxxx
-or
 
-	REACT_APP_SECURE_LOCAL_STORAGE_PREFIX=xxxxxxx
 
-### Added Support for Cypress.env, The version >= 1.0.15, added support for Cypress
+
+### Here are the .env prefix lists for the supported languages that are built-in.
+
+| Language | Prefix       |
+|----------|--------------|
+| React    | REACT_APP_   |
+| Vite     | VITE_        |
+| Next.Js  | NEXT_PUBLIC_ |
+
+You can always use the environment variables without the prefix as well
 
 
 ## How to use
@@ -85,8 +84,26 @@ or
 
 Here is the list of all the supported values `UserAgent|ScreenPrint|Plugins|Fonts|LocalStorage|SessionStorage|TimeZone|Language|SystemLanguage|Cookie|Canvas|Hostname`
 
->`Here we strongly recommend you to not to disable any of the properties as more properties you have, more unique the browser fingerprint will be!`
+>Here we strongly recommend you to not to disable any of the properties as more properties you have, more unique the browser fingerprint will be!
 
+
+
+### How to use environment variables for the supported languages.
+
+| Language | Key                                            | Usage                                                                            |
+|----------|------------------------------------------------|----------------------------------------------------------------------------------|
+| Default  | SECURE_LOCAL_STORAGE_HASH_KEY                  | Used to specify the user specific hash key                                        |
+| Default  | SECURE_LOCAL_STORAGE_PREFIX                    | Used to change the local storage prefix where the data will be finally saved     |
+| Default  | SECURE_LOCAL_STORAGE_DISABLED_KEYS             | Used to disable individual property from encryption / fingerprint key generation |
+| React    | REACT_APP_SECURE_LOCAL_STORAGE_HASH_KEY        | Used to specify the user specific hash key                                        |
+| React    | REACT_APP_SECURE_LOCAL_STORAGE_PREFIX          | Used to change the local storage prefix where the data will be finally saved     |
+| React    | REACT_APP_SECURE_LOCAL_STORAGE_DISABLED_KEYS   | Used to disable individual property from encryption / fingerprint key generation |
+| Vite     | VITE_SECURE_LOCAL_STORAGE_HASH_KEY             | Used to specify the user specific hash key                                        |
+| Vite     | VITE_SECURE_LOCAL_STORAGE_PREFIX               | Used to change the local storage prefix where the data will be finally saved     |
+| Vite     | VITE_SECURE_LOCAL_STORAGE_DISABLED_KEYS        | Used to disable individual property from encryption / fingerprint key generation |
+| Next.Js  | NEXT_PUBLIC_SECURE_LOCAL_STORAGE_HASH_KEY      | Used to specify the user specific hash key                                        |
+| Next.Js  | NEXT_PUBLIC_SECURE_LOCAL_STORAGE_PREFIX        | Used to change the local storage prefix where the data will be finally saved     |
+| Next.Js  | NEXT_PUBLIC_SECURE_LOCAL_STORAGE_DISABLED_KEYS | Used to disable individual property from encryption / fingerprint key generation |
 
 ## Sample Code
 
@@ -118,17 +135,17 @@ Here is the list of all the supported values `UserAgent|ScreenPrint|Plugins|Font
 
 ## Build Size ! 7.6KB
 
-## Whats new in 1.2.0?
+## Whats new in 1.2.1?
+
+Added support for Vite and Next.js environment variables 
+
+## Whats new | Previous?
 
 Now you can disable individual fingerprint generation properties, This is discussed in the following enhancement https://github.com/sushinpv/react-secure-storage/issues/14
-
-## Whats new in 1.1.0?
 
 Secure token returning null when the browser resizes problem was fixed. This was previously included as a security feature, but in the most recent update, it was removed. This was covered in the ensuing issue: https://github.com/sushinpv/react-secure-storage/issues/9
 
 Now that we have included the browser hostname while establishing the secure key, it is more unique. This will guarantee that each website's key is distinct.
-
-## Whats new | Previous?
 
 Added support for updating Local Storage prefix, Now this can be updated using .env
 
