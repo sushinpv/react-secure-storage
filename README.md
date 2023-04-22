@@ -8,7 +8,7 @@ Most of the people thinks that we can encrypt the data and save it on local stor
 
 Let's consider this **Scenario**, You have encrypted the user login information and saved on local storage, When the platform reload, You are decrypting the data which is written on local storage and marking the user as logged or logged out, Here your website share a common secure key to encrypt and decrypt,  which means only your website knows how to decrypt, 
 
-In this case, if someone copies the data from local storage and past on a different browser, then load your website, Your website will authenticate the user, Why ? because your website knows how the decrypt the data!
+In this case, if someone copies the data from local storage and past on a different browser, then load your website, Your website will authenticate the user, Why ? because your website knows how to decrypt the data!
 
 This is the problem when you have a single secure key! **Then how do we solve this issue ?**
 
@@ -34,11 +34,15 @@ The key is generated using browser fingerprint, which is generated using 10+ bro
 
 The user specific Secure key can be configured using  .env file as
 
-    SECURE_LOCAL_STORAGE_HASH_KEY=xxxxxxxxxxxxxxxx
+    SECURE_LOCAL_STORAGE_HASH_KEY=xxxxxxxxx
 
 or
 
 	REACT_APP_SECURE_LOCAL_STORAGE_HASH_KEY=xxxxxxxxx
+
+or 
+
+	VITE_SECURE_LOCAL_STORAGE_HASH_KEY=xxxxxxxxx
 
 
 Secure local storage prefix can be configured using .env file as
