@@ -73,6 +73,23 @@ You can use the following methods to read and write items to secure local storag
 |`removeItem(key)`          | To remove specified key from secure local storage|  |
 |`clear()`          | Removed all data from secure local storage|  |
 
+## How to use with Vite
+
+In the latest version of Vite, process is not defined by default, It uses `import.meta.env`, 
+
+To define the process, You need to add the following code inside `vite.config.ts`
+
+	import { defineConfig } from 'vite'
+	// ...
+	export default defineConfig({
+	    // ...
+	    define: {
+			"process.env": {},
+		},
+	}) 
+
+Here you can pass all the required `ENV` variables supported by the library inside the process.env object
+
 ## To disable properties from key generation
 
 If you wish to disable any of the key generation property, You can do it as below
