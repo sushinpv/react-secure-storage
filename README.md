@@ -82,10 +82,10 @@ To define the process, You need to add the following code inside `vite.config.ts
 	import { defineConfig } from 'vite'
 	// ...
 	export default defineConfig({
-	    // ...
-	    define: {
-			"process.env": {},
-		},
+	  // ...
+	  define: {
+	    "process.env": {},
+	  },
 	}) 
 
 Here you can pass all the required `ENV` variables supported by the library inside the process.env object
