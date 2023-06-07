@@ -184,3 +184,7 @@ The react-scripts is removed due to vulnerability issue which is highlighted in 
 To contribute on the library, make sure you are creating a development branch for your fix as `dev/{feature/fix}` and create a PR to master branch.
 
 Before creating the PR, Please make sure to remove the `react-scripts` from the `package.json`. and you are creating a production build for the library by running `yarn build:lib`
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=sushinpv/react-secure-storage&type=Date)](https://star-history.com/#sushinpv/react-secure-storage&Date)
