@@ -14,7 +14,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * @returns
  */
 var getSecurePrefix = function getSecurePrefix() {
-  var KEY_PREFIX = _envHelper.default.getEnvValue("SECURE_LOCAL_STORAGE_PREFIX") || "@secure.";
+  var KEY_PREFIX = _envHelper.default.getStoragePrefix() || "@secure.";
   if (!KEY_PREFIX.endsWith(".")) return KEY_PREFIX + ".";
   return KEY_PREFIX;
 };
@@ -42,7 +42,7 @@ var FINGERPRINT_KEYS = {
 exports.FINGERPRINT_KEYS = FINGERPRINT_KEYS;
 
 var getDisabledKeys = function getDisabledKeys() {
-  var DISABLED_KEYS = _envHelper.default.getEnvValue("SECURE_LOCAL_STORAGE_DISABLED_KEYS") || "";
+  var DISABLED_KEYS = _envHelper.default.getDisabledKeys() || "";
   if (DISABLED_KEYS === "") return [];
   var allOptions = [FINGERPRINT_KEYS.USERAGENT, FINGERPRINT_KEYS.SCREEN_PRINT, FINGERPRINT_KEYS.PLUGINS, FINGERPRINT_KEYS.FONTS, FINGERPRINT_KEYS.LOCAL_STORAGE, FINGERPRINT_KEYS.SESSION_STORAGE, FINGERPRINT_KEYS.TIMEZONE, FINGERPRINT_KEYS.LANGUAGE, FINGERPRINT_KEYS.SYSTEM_LANGUAGE, FINGERPRINT_KEYS.COOKIE, FINGERPRINT_KEYS.CANVAS, FINGERPRINT_KEYS.HOSTNAME];
   var response = [];

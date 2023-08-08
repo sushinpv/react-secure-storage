@@ -9,7 +9,7 @@ const HASH_KEY = "E86E2612010258B35137";
  * @returns
  */
 const getFingerprint = () => {
-  let HASH_KEY_CUSTOM = envHelper.getEnvValue("SECURE_LOCAL_STORAGE_HASH_KEY") || HASH_KEY;
+  let HASH_KEY_CUSTOM = envHelper.getHashKey() || HASH_KEY;
 
   if (typeof window === "undefined") return HASH_KEY_CUSTOM;
   return clientJS.getFingerprint() + HASH_KEY_CUSTOM;

@@ -19,7 +19,7 @@ var HASH_KEY = "E86E2612010258B35137";
  */
 
 var getFingerprint = function getFingerprint() {
-  var HASH_KEY_CUSTOM = _envHelper.default.getEnvValue("SECURE_LOCAL_STORAGE_HASH_KEY") || HASH_KEY;
+  var HASH_KEY_CUSTOM = _envHelper.default.getHashKey() || HASH_KEY;
   if (typeof window === "undefined") return HASH_KEY_CUSTOM;
   return _fingerprint.default.getFingerprint() + HASH_KEY_CUSTOM;
 };
