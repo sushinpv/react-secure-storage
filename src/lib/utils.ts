@@ -5,7 +5,7 @@ import envHelper from "./envHelper";
  * @returns
  */
 export const getSecurePrefix = (): string => {
-  let KEY_PREFIX = envHelper.getEnvValue("SECURE_LOCAL_STORAGE_PREFIX") || "@secure.";
+  let KEY_PREFIX = envHelper.getStoragePrefix() || "@secure.";
   if (!KEY_PREFIX.endsWith(".")) return KEY_PREFIX + ".";
   return KEY_PREFIX;
 };
@@ -30,7 +30,7 @@ export const FINGERPRINT_KEYS = {
  * @returns
  */
 export const getDisabledKeys = (): string[] => {
-  let DISABLED_KEYS = envHelper.getEnvValue("SECURE_LOCAL_STORAGE_DISABLED_KEYS") || "";
+  let DISABLED_KEYS = envHelper.getDisabledKeys() || "";
   if (DISABLED_KEYS === "") return [];
 
   const allOptions = [
