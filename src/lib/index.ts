@@ -25,14 +25,16 @@ const getLocalKey = (key: string, value: string | object | number | boolean | nu
 };
 
 /**
- * This version of local storage supports the following data types as it is and other data types will be treated as string
+ * This version of storage supports the following data types as it is and other data types will be treated as string
  * object, string, number and Boolean
  */
-class SecureLocalStorage {
+class SecureStorage {
+  private _storage: Storage;
   private _localStorageItems: LocalStorageItem = {};
-
-  constructor() {
-    this._localStorageItems = getAllLocalStorageItems();
+  
+  constructor(storage: Storage) {
+    this._storage = storage;
+    this._localStorageItems = getAllLocalStorageItems(this._storage);
   }
 
   /**
@@ -46,7 +48,7 @@ class SecureLocalStorage {
     let parsedKey = KEY_PREFIX + key;
     if (key != null) this._localStorageItems[parsedKey] = value;
     const encrypt = new EncryptionService();
-    localStorage.setItem(parsedKeyLocal, encrypt.encrypt(parsedValue));
+    this._storage.setItem(parsedKeyLocal, encrypt.encrypt(parsedValue));
   }
 
   /**
@@ -68,7 +70,7 @@ class SecureLocalStorage {
     let value = this._localStorageItems[parsedKey];
     let parsedKeyLocal = getLocalKey(key, value);
     if (this._localStorageItems[parsedKey] !== undefined) delete this._localStorageItems[parsedKey];
-    localStorage.removeItem(parsedKeyLocal);
+    this._storage.removeItem(parsedKeyLocal);
   }
 
   /**
@@ -76,10 +78,11 @@ class SecureLocalStorage {
    */
   clear() {
     this._localStorageItems = {};
-    localStorage.clear();
+    this._storage.clear();
   }
 }
 
-const secureLocalStorage = new SecureLocalStorage();
-
+const secureLocalStorage = new SecureStorage(localStorage);
 export default secureLocalStorage;
+
+export const secureSessionStorage = new SecureStorage(sessionStorage);

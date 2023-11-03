@@ -8,11 +8,11 @@ const KEY_PREFIX = getSecurePrefix();
  * Function to preload all the local storage data
  * @returns
  */
-const getAllLocalStorageItems = () => {
+const getAllLocalStorageItems = (storage: Storage) => {
   const localStorageItems: LocalStorageItem = {};
   if (typeof window !== "undefined") {
     const encrypt = new EncryptionService();
-    for (const [key, value] of Object.entries(localStorage)) {
+    for (const [key, value] of Object.entries(storage)) {
       if (key.startsWith(KEY_PREFIX)) {
         let keyType = key.replace(KEY_PREFIX, "")[0];
         let parsedKey = key.replace(/[.][bjns][.]/, ".");
