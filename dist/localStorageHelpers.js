@@ -51,11 +51,21 @@ var getAllLocalStorageItems = function getAllLocalStorageItems() {
             break;
 
           case "j":
-            parsedValue = JSON.parse(decryptedValue);
+            try {
+              parsedValue = JSON.parse(decryptedValue);
+            } catch (ex) {
+              parsedValue = null;
+            }
+
             break;
 
           case "n":
-            parsedValue = Number(decryptedValue);
+            try {
+              parsedValue = Number(decryptedValue);
+            } catch (ex) {
+              parsedValue = null;
+            }
+
             break;
 
           default:

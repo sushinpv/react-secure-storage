@@ -38,15 +38,18 @@ class SecureLocalStorage {
   /**
    * Function to set value to secure local storage
    * @param key to be added
-   * @param value value to be added
+   * @param value value to be added `use JSON.stringify(value) or value.toString() to save any other data type`
    */
   setItem(key: string, value: string | object | number | boolean) {
-    let parsedValue = typeof value === "object" ? JSON.stringify(value) : value + "";
-    let parsedKeyLocal = getLocalKey(key, value);
-    let parsedKey = KEY_PREFIX + key;
-    if (key != null) this._localStorageItems[parsedKey] = value;
-    const encrypt = new EncryptionService();
-    localStorage.setItem(parsedKeyLocal, encrypt.encrypt(parsedValue));
+    if (value === null || value === undefined) this.removeItem(key);
+    else {
+      let parsedValue = typeof value === "object" ? JSON.stringify(value) : value + "";
+      let parsedKeyLocal = getLocalKey(key, value);
+      let parsedKey = KEY_PREFIX + key;
+      if (key != null) this._localStorageItems[parsedKey] = value;
+      const encrypt = new EncryptionService();
+      localStorage.setItem(parsedKeyLocal, encrypt.encrypt(parsedValue));
+    }
   }
 
   /**
@@ -56,7 +59,7 @@ class SecureLocalStorage {
    */
   getItem(key: string): string | object | number | boolean | null {
     let parsedKey = KEY_PREFIX + key;
-    return this._localStorageItems[parsedKey] || null;
+    return this._localStorageItems[parsedKey] ?? null;
   }
 
   /**

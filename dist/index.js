@@ -61,19 +61,21 @@ var SecureLocalStorage = /*#__PURE__*/function () {
   /**
    * Function to set value to secure local storage
    * @param key to be added
-   * @param value value to be added
+   * @param value value to be added `use JSON.stringify(value) or value.toString() to save any other data type`
    */
 
 
   _createClass(SecureLocalStorage, [{
     key: "setItem",
     value: function setItem(key, value) {
-      var parsedValue = _typeof(value) === "object" ? JSON.stringify(value) : value + "";
-      var parsedKeyLocal = getLocalKey(key, value);
-      var parsedKey = KEY_PREFIX + key;
-      if (key != null) this._localStorageItems[parsedKey] = value;
-      var encrypt = new _encryption.default();
-      localStorage.setItem(parsedKeyLocal, encrypt.encrypt(parsedValue));
+      if (value === null || value === undefined) this.removeItem(key);else {
+        var parsedValue = _typeof(value) === "object" ? JSON.stringify(value) : value + "";
+        var parsedKeyLocal = getLocalKey(key, value);
+        var parsedKey = KEY_PREFIX + key;
+        if (key != null) this._localStorageItems[parsedKey] = value;
+        var encrypt = new _encryption.default();
+        localStorage.setItem(parsedKeyLocal, encrypt.encrypt(parsedValue));
+      }
     }
     /**
      * Function to get value from secure local storage
@@ -84,8 +86,10 @@ var SecureLocalStorage = /*#__PURE__*/function () {
   }, {
     key: "getItem",
     value: function getItem(key) {
+      var _this$_localStorageIt;
+
       var parsedKey = KEY_PREFIX + key;
-      return this._localStorageItems[parsedKey] || null;
+      return (_this$_localStorageIt = this._localStorageItems[parsedKey]) !== null && _this$_localStorageIt !== void 0 ? _this$_localStorageIt : null;
     }
     /**
      * Function to remove item from secure local storage

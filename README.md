@@ -152,11 +152,13 @@ Here is the list of all the supported values `UserAgent|ScreenPrint|Plugins|Font
 
 ## Build Size ! 7.6KB
 
-## Whats new in 1.2.1?
+## Whats new in 1.3.1?
 
-Added support for Vite and Next.js environment variables 
+Regular bug fixes and https://github.com/sushinpv/react-secure-storage/issues/39 is resolved
 
 ## Whats new | Previous?
+
+Added support for Vite and Next.js environment variables 
 
 Now you can disable individual fingerprint generation properties, This is discussed in the following enhancement https://github.com/sushinpv/react-secure-storage/issues/14
 
