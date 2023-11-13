@@ -54,11 +54,9 @@ var EncryptionService = /*#__PURE__*/function () {
     key: "decrypt",
     value: function decrypt(value) {
       try {
-        var _bytes$toString;
-
         var bytes = _aes.default.decrypt(value, this.secureKey);
 
-        return (_bytes$toString = bytes.toString(_encUtf.default)) !== null && _bytes$toString !== void 0 ? _bytes$toString : null;
+        return bytes.toString(_encUtf.default) || null;
       } catch (ex) {
         return null;
       }

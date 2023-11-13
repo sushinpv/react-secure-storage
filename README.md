@@ -152,7 +152,7 @@ Here is the list of all the supported values `UserAgent|ScreenPrint|Plugins|Font
 
 ## Build Size ! 7.6KB
 
-## Whats new in 1.3.1?
+## Whats new in 1.3.2?
 
 Regular bug fixes and https://github.com/sushinpv/react-secure-storage/issues/39 is resolved
 
