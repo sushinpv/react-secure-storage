@@ -5,11 +5,11 @@ import getFingerprint from "./fingerprint";
 /**
  * EncryptionService
  */
-const EncryptionService = class {
-  secureKey: string = "";
+class EncryptionService {
+  static secureKey: string = "";
 
   constructor() {
-    this.secureKey = getFingerprint();
+    EncryptionService.secureKey = getFingerprint();
   }
 
   /**
@@ -17,7 +17,7 @@ const EncryptionService = class {
    * @param value
    * @returns
    */
-  encrypt(value: string) {
+  static encrypt(value: string) {
     return AES.encrypt(value, this.secureKey).toString();
   }
 
@@ -26,7 +26,7 @@ const EncryptionService = class {
    * @param value
    * @returns
    */
-  decrypt(value: string) {
+  static decrypt(value: string) {
     try {
       var bytes = AES.decrypt(value, this.secureKey);
       return bytes.toString(Utf8) || null;

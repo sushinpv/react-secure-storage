@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import secureLocalStorage from "./lib";
+import {secureLocalStorage, secureSessionStorage} from "./lib";
 import logo from "./logo.svg";
 import "./App.css";
 
@@ -12,6 +12,14 @@ function App() {
     secureLocalStorage.setItem("number", 12);
     secureLocalStorage.setItem("string", "12");
     secureLocalStorage.setItem("boolean", true);
+
+    console.log("secureSessionStorage", secureSessionStorage);
+    secureSessionStorage.setItem("object", {
+      message: "This is testing of local storage",
+    });
+    secureSessionStorage.setItem("number", 12);
+    secureSessionStorage.setItem("string", "12");
+    secureSessionStorage.setItem("boolean", true);
   }, []);
 
   return (

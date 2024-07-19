@@ -1,6 +1,6 @@
-import { LocalStorageItem } from "./coreTypes";
+import { StorageItem } from "./coreTypes";
 import EncryptionService from "./encryption";
-import getAllLocalStorageItems from "./localStorageHelpers";
+import getAllStorageItems from "./StorageHelpers";
 import { getSecurePrefix } from "./utils";
 
 const KEY_PREFIX = getSecurePrefix();
@@ -15,74 +15,78 @@ const getDataType = (value: string | object | number | boolean | null) => {
 };
 
 /**
- * Function to create local storage key
+ * Function to create storage key
  * @param key
  * @param value
  */
-const getLocalKey = (key: string, value: string | object | number | boolean | null) => {
+const getStorageKey = (key: string, value: string | object | number | boolean | null) => {
   let keyType = getDataType(value);
-  return KEY_PREFIX + `${keyType}.` + key;
+  return `${KEY_PREFIX}${keyType}.${key}`;
 };
 
 /**
- * This version of local storage supports the following data types as it is and other data types will be treated as string
+ * This version of storage supports the following data types as it is and other data types will be treated as string
  * object, string, number and Boolean
  */
-class SecureLocalStorage {
-  private _localStorageItems: LocalStorageItem = {};
+class SecureStorage {
+  private _storageItems: StorageItem = {};
+  private _storage: Storage;
+  private _encrypt: typeof EncryptionService;
 
-  constructor() {
-    this._localStorageItems = getAllLocalStorageItems();
+  constructor(storageType: 'local' | 'session') {
+    this._storage = storageType === 'local' ? localStorage : sessionStorage;
+    this._encrypt = EncryptionService;
+    this._storageItems = getAllStorageItems(this._storage, this._encrypt);
   }
 
   /**
-   * Function to set value to secure local storage
+   * Function to set value to secure storage
    * @param key to be added
    * @param value value to be added `use JSON.stringify(value) or value.toString() to save any other data type`
    */
-  setItem(key: string, value: string | object | number | boolean) {
-    if (value === null || value === undefined) this.removeItem(key);
-    else {
+  setItem(key: string, value: string | object | number | boolean): void {
+    if (value === null || value === undefined) {
+      this.removeItem(key);
+    } else {
       let parsedValue = typeof value === "object" ? JSON.stringify(value) : value + "";
-      let parsedKeyLocal = getLocalKey(key, value);
-      let parsedKey = KEY_PREFIX + key;
-      if (key != null) this._localStorageItems[parsedKey] = value;
-      const encrypt = new EncryptionService();
-      localStorage.setItem(parsedKeyLocal, encrypt.encrypt(parsedValue));
+      let parsedKey = getStorageKey(key, value);
+      if (key != null) this._storageItems[parsedKey] = value;
+      this._storage.setItem(parsedKey, this._encrypt.encrypt(parsedValue));
     }
   }
 
   /**
-   * Function to get value from secure local storage
+   * Function to get value from secure storage
    * @param key to get
    * @returns
    */
   getItem(key: string): string | object | number | boolean | null {
-    let parsedKey = KEY_PREFIX + key;
-    return this._localStorageItems[parsedKey] ?? null;
+    let parsedKey = `${KEY_PREFIX}${key}`;
+    return this._storageItems[parsedKey] ?? null;
   }
 
   /**
-   * Function to remove item from secure local storage
+   * Function to remove item from secure storage
    * @param key to be removed
    */
-  removeItem(key: string) {
-    let parsedKey = KEY_PREFIX + key;
-    let value = this._localStorageItems[parsedKey];
-    let parsedKeyLocal = getLocalKey(key, value);
-    if (this._localStorageItems[parsedKey] !== undefined) delete this._localStorageItems[parsedKey];
-    localStorage.removeItem(parsedKeyLocal);
+  removeItem(key: string): void {
+    let parsedKey = `${KEY_PREFIX}${key}`;
+    let value = this._storageItems[parsedKey];
+    let parsedKeyLocal = getStorageKey(key, value);
+    if (this._storageItems[parsedKey] !== undefined) delete this._storageItems[parsedKey];
+    this._storage.removeItem(parsedKeyLocal);
   }
 
   /**
-   * Function to clear secure local storage
+   * Function to clear secure storage
    */
-  clear() {
-    this._localStorageItems = {};
-    localStorage.clear();
+  clear(): void {
+    this._storageItems = {};
+    this._storage.clear();
   }
 }
 
-const secureLocalStorage = new SecureLocalStorage();
+const secureLocalStorage = new SecureStorage('local');
+const secureSessionStorage = new SecureStorage('session');
 
-export default secureLocalStorage;
+export { secureLocalStorage, secureSessionStorage };

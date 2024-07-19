@@ -138,6 +138,15 @@ Here is the list of all the supported values `UserAgent|ScreenPrint|Plugins|Font
 		    secureLocalStorage.setItem("string", "12");
 		    secureLocalStorage.setItem("boolean", true);
 		    let value = secureLocalStorage.getItem("boolean");
+
+			console.log("secureSessionStorage", secureSessionStorage);
+			secureSessionStorage.setItem("object", {
+			message: "This is testing of local storage",
+			});
+			secureSessionStorage.setItem("number", 12);
+			secureSessionStorage.setItem("string", "12");
+			secureSessionStorage.setItem("boolean", true);
+			let value2 = secureSessionStorage.getItem("boolean");
 		}, []);
     
 	   return (
@@ -157,6 +166,8 @@ Here is the list of all the supported values `UserAgent|ScreenPrint|Plugins|Font
 Regular bug fixes and https://github.com/sushinpv/react-secure-storage/issues/39 is resolved
 
 ## Whats new | Previous?
+
+Added secureSessionStorage support
 
 Added support for Vite and Next.js environment variables 
 
