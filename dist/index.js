@@ -3,11 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+exports.secureStorage = exports.secureSessionStorage = exports.secureLocalStorage = void 0;
 
 var _encryption = _interopRequireDefault(require("./encryption"));
 
-var _localStorageHelpers = _interopRequireDefault(require("./localStorageHelpers"));
+var _storageHelpers = _interopRequireDefault(require("./storageHelpers"));
 
 var _utils = require("./utils");
 
@@ -34,7 +34,7 @@ var getDataType = function getDataType(value) {
   return _typeof(value) === "object" ? "j" : typeof value === "boolean" ? "b" : typeof value === "number" ? "n" : "s";
 };
 /**
- * Function to create local storage key
+ * Function to create storage key
  * @param key
  * @param value
  */
@@ -45,18 +45,21 @@ var getLocalKey = function getLocalKey(key, value) {
   return KEY_PREFIX + "".concat(keyType, ".") + key;
 };
 /**
- * This version of local storage supports the following data types as it is and other data types will be treated as string
+ * This version of storage supports the following data types as it is and other data types will be treated as string
  * object, string, number and Boolean
  */
 
 
-var SecureLocalStorage = /*#__PURE__*/function () {
-  function SecureLocalStorage() {
-    _classCallCheck(this, SecureLocalStorage);
+var secureStorage = /*#__PURE__*/function () {
+  function secureStorage(storage) {
+    _classCallCheck(this, secureStorage);
 
-    _defineProperty(this, "_localStorageItems", {});
+    _defineProperty(this, "_storage", void 0);
 
-    this._localStorageItems = (0, _localStorageHelpers.default)();
+    _defineProperty(this, "_storageItems", {});
+
+    this._storage = storage;
+    this._storageItems = (0, _storageHelpers.default)(storage);
   }
   /**
    * Function to set value to secure local storage
@@ -65,20 +68,21 @@ var SecureLocalStorage = /*#__PURE__*/function () {
    */
 
 
-  _createClass(SecureLocalStorage, [{
+  _createClass(secureStorage, [{
     key: "setItem",
     value: function setItem(key, value) {
       if (value === null || value === undefined) this.removeItem(key);else {
         var parsedValue = _typeof(value) === "object" ? JSON.stringify(value) : value + "";
         var parsedKeyLocal = getLocalKey(key, value);
         var parsedKey = KEY_PREFIX + key;
-        if (key != null) this._localStorageItems[parsedKey] = value;
+        if (key != null) this._storageItems[parsedKey] = value;
         var encrypt = new _encryption.default();
-        localStorage.setItem(parsedKeyLocal, encrypt.encrypt(parsedValue));
+
+        this._storage.setItem(parsedKeyLocal, encrypt.encrypt(parsedValue));
       }
     }
     /**
-     * Function to get value from secure local storage
+     * Function to get value from secure storage
      * @param key to get
      * @returns
      */
@@ -86,13 +90,13 @@ var SecureLocalStorage = /*#__PURE__*/function () {
   }, {
     key: "getItem",
     value: function getItem(key) {
-      var _this$_localStorageIt;
+      var _this$_storageItems$p;
 
       var parsedKey = KEY_PREFIX + key;
-      return (_this$_localStorageIt = this._localStorageItems[parsedKey]) !== null && _this$_localStorageIt !== void 0 ? _this$_localStorageIt : null;
+      return (_this$_storageItems$p = this._storageItems[parsedKey]) !== null && _this$_storageItems$p !== void 0 ? _this$_storageItems$p : null;
     }
     /**
-     * Function to remove item from secure local storage
+     * Function to remove item from secure storage
      * @param key to be removed
      */
 
@@ -100,26 +104,30 @@ var SecureLocalStorage = /*#__PURE__*/function () {
     key: "removeItem",
     value: function removeItem(key) {
       var parsedKey = KEY_PREFIX + key;
-      var value = this._localStorageItems[parsedKey];
+      var value = this._storageItems[parsedKey];
       var parsedKeyLocal = getLocalKey(key, value);
-      if (this._localStorageItems[parsedKey] !== undefined) delete this._localStorageItems[parsedKey];
-      localStorage.removeItem(parsedKeyLocal);
+      if (this._storageItems[parsedKey] !== undefined) delete this._storageItems[parsedKey];
+
+      this._storage.removeItem(parsedKeyLocal);
     }
     /**
-     * Function to clear secure local storage
+     * Function to clear secure storage
      */
 
   }, {
     key: "clear",
     value: function clear() {
-      this._localStorageItems = {};
-      localStorage.clear();
+      this._storageItems = {};
+
+      this._storage.clear();
     }
   }]);
 
-  return SecureLocalStorage;
+  return secureStorage;
 }();
 
-var secureLocalStorage = new SecureLocalStorage();
-var _default = secureLocalStorage;
-exports.default = _default;
+exports.secureStorage = secureStorage;
+var secureLocalStorage = typeof window !== 'undefined' && typeof window.localStorage !== 'undefined' ? new secureStorage(window.localStorage) : null;
+exports.secureLocalStorage = secureLocalStorage;
+var secureSessionStorage = typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined' ? new secureStorage(window.sessionStorage) : null;
+exports.secureSessionStorage = secureSessionStorage;

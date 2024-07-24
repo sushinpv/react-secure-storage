@@ -25,17 +25,18 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 var KEY_PREFIX = (0, _utils.getSecurePrefix)();
 /**
- * Function to preload all the local storage data
+ * Function to preload all the storage data
  * @returns
  */
 
-var getAllLocalStorageItems = function getAllLocalStorageItems() {
+var getAllStorageItems = function getAllStorageItems(storage) {
+  var sessionStorageItems = {};
   var localStorageItems = {};
 
   if (typeof window !== "undefined") {
     var encrypt = new _encryption.default();
 
-    for (var _i = 0, _Object$entries = Object.entries(localStorage); _i < _Object$entries.length; _i++) {
+    for (var _i = 0, _Object$entries = Object.entries(storage); _i < _Object$entries.length; _i++) {
       var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
           key = _Object$entries$_i[0],
           value = _Object$entries$_i[1];
@@ -71,13 +72,22 @@ var getAllLocalStorageItems = function getAllLocalStorageItems() {
           default:
             parsedValue = decryptedValue;
         }
-        localStorageItems[parsedKey] = parsedValue;
+
+        if (storage === sessionStorage) {
+          sessionStorageItems[parsedKey] = parsedValue;
+        } else {
+          localStorageItems[parsedKey] = parsedValue;
+        }
       }
     }
   }
 
-  return localStorageItems;
+  if (storage === sessionStorage) {
+    return sessionStorageItems;
+  } else {
+    return localStorageItems;
+  }
 };
 
-var _default = getAllLocalStorageItems;
+var _default = getAllStorageItems;
 exports.default = _default;

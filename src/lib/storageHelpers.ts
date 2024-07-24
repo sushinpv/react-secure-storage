@@ -1,18 +1,19 @@
-import { LocalStorageItem } from "./coreTypes";
+import { SessionStorageItem, LocalStorageItem } from "./coreTypes";
 import EncryptionService from "./encryption";
 import { getSecurePrefix } from "./utils";
 
 const KEY_PREFIX = getSecurePrefix();
 
 /**
- * Function to preload all the local storage data
+ * Function to preload all the storage data
  * @returns
  */
-const getAllLocalStorageItems = () => {
-  const localStorageItems: LocalStorageItem = {};
+const getAllStorageItems = (storage : Storage) => {
+  let sessionStorageItems: SessionStorageItem = {};
+  let localStorageItems: LocalStorageItem = {};
   if (typeof window !== "undefined") {
     const encrypt = new EncryptionService();
-    for (const [key, value] of Object.entries(localStorage)) {
+    for (const [key, value] of Object.entries(storage)) {
       if (key.startsWith(KEY_PREFIX)) {
         let keyType = key.replace(KEY_PREFIX, "")[0];
         let parsedKey = key.replace(/[.][bjns][.]/, ".");
@@ -40,11 +41,19 @@ const getAllLocalStorageItems = () => {
             default:
               parsedValue = decryptedValue;
           }
-        localStorageItems[parsedKey] = parsedValue;
+          if (storage === sessionStorage) {
+            sessionStorageItems[parsedKey] = parsedValue;
+          } else {
+            localStorageItems[parsedKey] = parsedValue;
+          }
       }
     }
   }
-  return localStorageItems;
+  if (storage === sessionStorage) {
+    return sessionStorageItems;
+  } else {
+    return localStorageItems;
+  }
 };
 
-export default getAllLocalStorageItems;
+export default getAllStorageItems;

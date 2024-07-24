@@ -126,18 +126,26 @@ Here is the list of all the supported values `UserAgent|ScreenPrint|Plugins|Font
 
     
     import { useEffect } from  "react";
-    import  secureLocalStorage  from  "react-secure-storage";
+    import { secureLocalStorage, secureSessionStorage } from  "react-secure-storage";
     
       
     const App = () => {
 	    useEffect(() => {
-		    secureLocalStorage.setItem("object", {
+		    secureLocalStorage?.setItem("object", {
 			    message:  "This is testing of local storage",
 		    });
-		    secureLocalStorage.setItem("number", 12);
-		    secureLocalStorage.setItem("string", "12");
-		    secureLocalStorage.setItem("boolean", true);
-		    let value = secureLocalStorage.getItem("boolean");
+		    secureLocalStorage?.setItem("number", 12);
+		    secureLocalStorage?.setItem("string", "12");
+		    secureLocalStorage?.setItem("boolean", true);
+		    let value = secureLocalStorage?.getItem("boolean");
+
+			secureSessionStorage?.setItem("object", {
+			    message:  "This is testing of local storage",
+		    });
+		    secureLocalStorage?.setItem("number", 12);
+		    secureLocalStorage?.setItem("string", "12");
+		    secureLocalStorage?.setItem("boolean", true);
+		    let value = secureLocalStorage?.getItem("boolean");
 		}, []);
     
 	   return (
@@ -157,6 +165,8 @@ Here is the list of all the supported values `UserAgent|ScreenPrint|Plugins|Font
 Regular bug fixes and https://github.com/sushinpv/react-secure-storage/issues/39 is resolved
 
 ## Whats new | Previous?
+
+Added secure session storage support
 
 Added support for Vite and Next.js environment variables 
 
