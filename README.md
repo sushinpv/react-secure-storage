@@ -180,6 +180,7 @@ Keep session and auth tokens in `httpOnly`, `Secure` cookies. Version 2 will rep
 | [Security policy](SECURITY.md) | What is and isn't protected, how to report a vulnerability |
 | [Roadmap](docs/react-secure-storage-roadmap.md) | Known issues, planned work, v2 design |
 | [Contributing](CONTRIBUTING.md) | Local setup, tests, pull request checklist |
+| [Code of conduct](CODE_OF_CONDUCT.md) | Expected behaviour in issues, pull requests and discussions |
 
 ## Contributing
 
@@ -193,7 +194,7 @@ node scripts/setup-e2e.mjs   # build the Next.js, Vite and React Router test app
 npm run test:e2e             # Playwright end-to-end tests
 ```
 
-All checks run in GitHub Actions on every pull request. Please report security issues privately as described in the [security policy](SECURITY.md).
+All checks run in GitHub Actions on every pull request. Please report security issues privately as described in the [security policy](SECURITY.md), and follow the [code of conduct](CODE_OF_CONDUCT.md).
 
 ## Project status and license
 

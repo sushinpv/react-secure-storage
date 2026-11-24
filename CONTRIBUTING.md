@@ -2,6 +2,8 @@
 
 Thanks for helping improve react-secure-storage. Bug reports, documentation fixes, tests and focused pull requests are all welcome.
 
+Everyone taking part is expected to follow the [code of conduct](CODE_OF_CONDUCT.md).
+
 ## Before you start
 
 - **Bugs:** open an [issue](https://github.com/sushinpv/react-secure-storage/issues/new/choose) with the version, framework (Next.js, Vite, React Router, …), browser and a minimal reproduction.
@@ -42,6 +44,8 @@ npm install
 | `scripts/` | Build, packaging and size scripts |
 
 ## Pull request checklist
+
+The [pull request template](.github/pull_request_template.md) includes this checklist.
 
 - [ ] Branch from `master`, named `dev/<feature-or-fix>`.
 - [ ] Tests added or updated. For SSR-related changes, cover both `tests/ssr` and the end-to-end apps.
