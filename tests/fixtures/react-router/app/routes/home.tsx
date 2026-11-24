@@ -3,11 +3,11 @@ import secureLocalStorage from "react-secure-storage";
 import Demo from "../Demo";
 
 // Runs on the server for the initial request: library calls must be safe no-ops
-export function loader() {
-  secureLocalStorage.setItem("server", "should-not-persist");
-  const value = secureLocalStorage.getItem("server");
-  secureLocalStorage.removeItem("server");
-  secureLocalStorage.clear();
+export async function loader() {
+  await secureLocalStorage.setItem("server", "should-not-persist");
+  const value = await secureLocalStorage.getItem("server");
+  await secureLocalStorage.removeItem("server");
+  await secureLocalStorage.clear();
   return { serverValue: String(value) };
 }
 

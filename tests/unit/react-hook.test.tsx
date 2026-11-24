@@ -1,68 +1,72 @@
-import { act, render, renderHook, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
-
-/** Fresh core instance and the hook bound to it, as on a new page load */
-const loadFresh = async () => {
-  vi.resetModules();
-  const storage = (await import("../../src/lib/index")).default;
-  const { useSecureStorage } = await import("../../src/lib/react");
-  return { storage, useSecureStorage };
-};
+import { act, render, renderHook, screen, waitFor } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
+import { fireStorageEvent, loadFresh } from "../setup/helpers";
 
 describe("useSecureStorage", () => {
-  it("returns the initial value when nothing is stored", async () => {
+  it("returns the initial value with loading true, then loading false", async () => {
     const { useSecureStorage } = await loadFresh();
     const { result } = renderHook(() => useSecureStorage("theme", "light"));
+    expect(result.current[0]).toBe("light");
+    expect(result.current[3]).toEqual({ loading: true });
+    await waitFor(() => expect(result.current[3].loading).toBe(false));
     expect(result.current[0]).toBe("light");
   });
 
   it("returns null without an initial value", async () => {
     const { useSecureStorage } = await loadFresh();
     const { result } = renderHook(() => useSecureStorage("theme"));
+    await waitFor(() => expect(result.current[3].loading).toBe(false));
     expect(result.current[0]).toBeNull();
   });
 
-  it("returns the stored value on the first render in a client-only app", async () => {
-    (await loadFresh()).storage.setItem("theme", "dark");
+  it("returns the stored value once decrypted", async () => {
+    await (await loadFresh()).storage.setItem("theme", "dark");
     const { useSecureStorage } = await loadFresh();
-    const renders: unknown[] = [];
-    renderHook(() => {
-      const [value] = useSecureStorage("theme", "light");
-      renders.push(value);
-    });
-    expect(renders[0]).toBe("dark");
+    const { result } = renderHook(() => useSecureStorage("theme", "light"));
+    await waitFor(() => expect(result.current[0]).toBe("dark"));
+    expect(result.current[3].loading).toBe(false);
   });
 
-  it("setValue stores the value and re-renders", async () => {
-    const { storage, useSecureStorage } = await loadFresh();
+  it("setValue updates immediately and is saved", async () => {
+    const { useSecureStorage, storage } = await loadFresh();
     const { result } = renderHook(() => useSecureStorage("settings", { size: 1 }));
-
+    await waitFor(() => expect(result.current[3].loading).toBe(false));
     act(() => result.current[1]({ size: 2 }));
     expect(result.current[0]).toEqual({ size: 2 });
-    expect(storage.getItem("settings")).toEqual({ size: 2 });
+    expect(await storage.getItem("settings")).toEqual({ size: 2 });
   });
 
-  it("setValue accepts an updater function", async () => {
+  it("updater functions see the previous update in the same tick", async () => {
+    const { useSecureStorage, storage } = await loadFresh();
+    const { result } = renderHook(() => useSecureStorage("count", 0));
+    await waitFor(() => expect(result.current[3].loading).toBe(false));
+    act(() => {
+      result.current[1]((n) => n + 1);
+      result.current[1]((n) => n + 1);
+    });
+    expect(result.current[0]).toBe(2);
+    expect(await storage.getItem("count")).toBe(2);
+  });
+
+  it("a write during the initial load is not overwritten by it", async () => {
+    await (await loadFresh()).storage.setItem("count", 10);
     const { useSecureStorage } = await loadFresh();
     const { result } = renderHook(() => useSecureStorage("count", 0));
-
-    act(() => result.current[1]((n) => n + 1));
-    act(() => result.current[1]((n) => n + 1));
-    expect(result.current[0]).toBe(2);
+    act(() => result.current[1](99));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(result.current[0]).toBe(99);
   });
 
-  it("setValue(null) and removeValue remove the key and fall back to the initial value", async () => {
-    const { storage, useSecureStorage } = await loadFresh();
+  it("setValue(null) and removeValue remove the key", async () => {
+    const { useSecureStorage, storage } = await loadFresh();
     const { result } = renderHook(() => useSecureStorage("count", 0));
-
     act(() => result.current[1](5));
     act(() => result.current[1](null));
     expect(result.current[0]).toBe(0);
-
     act(() => result.current[1](5));
     act(() => result.current[2]());
     expect(result.current[0]).toBe(0);
-    expect(storage.getItem("count")).toBeNull();
+    expect(await storage.getItem("count")).toBeNull();
   });
 
   it("keeps components using the same key in sync", async () => {
@@ -82,44 +86,43 @@ describe("useSecureStorage", () => {
       </>
     );
     act(() => screen.getByText("write").click());
-    expect(screen.getByTestId("reader").textContent).toBe("updated");
+    await waitFor(() => expect(screen.getByTestId("reader").textContent).toBe("updated"));
   });
 
-  it("updates when the core API changes the key or clears storage", async () => {
-    const { storage, useSecureStorage } = await loadFresh();
+  it("updates when the async or sync API changes the key", async () => {
+    const { useSecureStorage, storage, syncStorage } = await loadFresh();
     const { result } = renderHook(() => useSecureStorage("flag", false));
-
-    act(() => storage.setItem("flag", true));
-    expect(result.current[0]).toBe(true);
-    act(() => storage.clear());
-    expect(result.current[0]).toBe(false);
+    await act(() => storage.setItem("flag", true));
+    await waitFor(() => expect(result.current[0]).toBe(true));
+    act(() => syncStorage.clear());
+    await waitFor(() => expect(result.current[0]).toBe(false));
   });
 
   it("updates when another tab changes the key", async () => {
     const { useSecureStorage } = await loadFresh();
     const { result } = renderHook(() => useSecureStorage("user", "nobody"));
+    await waitFor(() => expect(result.current[3].loading).toBe(false));
 
-    const otherTab = (await import("../setup/helpers")).loadFresh;
-    (await otherTab()).setItem("user", "Alice");
-    act(() => {
-      window.dispatchEvent(new StorageEvent("storage", { key: "@secure.s.user", storageArea: localStorage }));
-    });
-    expect(result.current[0]).toBe("Alice");
+    const otherTab = (await import("../../src/lib/index")).default; // same page store; simulate the event
+    await otherTab.setItem("user", "Alice");
+    act(() => fireStorageEvent("@secure.2.user"));
+    await waitFor(() => expect(result.current[0]).toBe("Alice"));
   });
 
   it("follows a change of key", async () => {
-    const { storage, useSecureStorage } = await loadFresh();
-    storage.setItem("a", "value a");
-    storage.setItem("b", "value b");
+    const { useSecureStorage, storage } = await loadFresh();
+    await storage.setItem("a", "value a");
+    await storage.setItem("b", "value b");
     const { result, rerender } = renderHook(({ k }) => useSecureStorage(k, "none"), { initialProps: { k: "a" } });
-    expect(result.current[0]).toBe("value a");
+    await waitFor(() => expect(result.current[0]).toBe("value a"));
     rerender({ k: "b" });
-    expect(result.current[0]).toBe("value b");
+    expect(result.current[3].loading).toBe(true);
+    await waitFor(() => expect(result.current[0]).toBe("value b"));
   });
 
   it("unsubscribes on unmount", async () => {
-    const { storage, useSecureStorage } = await loadFresh();
-    const listeners = () => (storage as unknown as { _changeListeners: unknown[] })._changeListeners.length;
+    const { useSecureStorage, store } = await loadFresh();
+    const listeners = () => (store as unknown as { changeListeners: unknown[] }).changeListeners.length;
     const { unmount } = renderHook(() => useSecureStorage("k", 0));
     expect(listeners()).toBe(1);
     unmount();

@@ -1,6 +1,6 @@
 /**
  * Server-side rendering: the built package must import and run in plain Node without browser globals.
- * Uses the compiled `dist/` output (run `npm run build:lib` first; `npm test` does this).
+ * Uses the compiled `dist/` output (`npm test` builds it first).
  */
 import { execFileSync } from "node:child_process";
 import { createRequire } from "node:module";
@@ -10,11 +10,14 @@ import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 
 const require = createRequire(import.meta.url);
-type SecureStorage = typeof import("../../src/lib/index").default;
 
-const loadDist = (): SecureStorage => {
+const loadDist = () => {
   for (const id of Object.keys(require.cache)) if (id.includes("/dist/")) delete require.cache[id];
-  return require("../../dist/index.js").default;
+  return {
+    storage: require("../../dist/index.js"),
+    syncStorage: require("../../dist/sync.js"),
+    useSecureStorage: require("../../dist/react.js").useSecureStorage,
+  };
 };
 
 describe("SSR (Node, no browser globals)", () => {
@@ -23,51 +26,36 @@ describe("SSR (Node, no browser globals)", () => {
     expect(typeof document).toBe("undefined");
   });
 
-  it("imports without throwing", () => {
+  it("imports every entry without throwing", () => {
     expect(() => loadDist()).not.toThrow();
   });
 
-  it("getItem returns null", () => {
-    expect(loadDist().getItem("anything")).toBeNull();
+  it("async API: reads resolve to null, writes resolve without storing anything", async () => {
+    const { storage } = loadDist();
+    await expect(storage.setItem("user", { name: "Alice" })).resolves.toBeUndefined();
+    await expect(storage.getItem("user")).resolves.toBeNull(); // no state shared between requests
+    await expect(storage.removeItem("user")).resolves.toBeUndefined();
+    await expect(storage.clear()).resolves.toBeUndefined();
   });
 
-  it("setItem, removeItem and clear are no-ops that do not throw", () => {
-    const storage = loadDist();
+  it("sync API: ready() resolves, reads return null, writes are no-ops", async () => {
+    const { syncStorage } = loadDist();
+    await expect(syncStorage.ready()).resolves.toBeUndefined();
+    syncStorage.setItem("user", "Alice");
+    expect(syncStorage.getItem("user")).toBeNull();
     expect(() => {
-      storage.setItem("k", "v");
-      storage.setItem("o", { a: 1 });
-      storage.removeItem("k");
-      storage.clear();
+      syncStorage.removeItem("user");
+      syncStorage.clear();
     }).not.toThrow();
   });
 
-  it("keeps no state between server requests", () => {
-    const storage = loadDist();
-    // request 1 writes user data
-    storage.setItem("user", { name: "Alice" });
-    // request 2 must not see it
-    expect(storage.getItem("user")).toBeNull();
-  });
-
-  it("can be used while rendering a React tree to a string", () => {
-    const storage = loadDist();
-    const Component = () => createElement("span", null, String(storage.getItem("user") ?? "none"));
-    expect(renderToString(createElement(Component))).toBe("<span>none</span>");
-  });
-});
-
-describe("useSecureStorage on the server", () => {
-  it("renders the initial value and setters are safe no-ops", () => {
-    for (const id of Object.keys(require.cache)) if (id.includes("/dist/")) delete require.cache[id];
-    const { useSecureStorage } = require("../../dist/react.js");
-    let setter: ((v: unknown) => void) | undefined;
+  it("hook renders the initial value with loading true", () => {
+    const { useSecureStorage } = loadDist();
     const Component = () => {
-      const [theme, setTheme] = useSecureStorage("theme", "light");
-      setter = setTheme;
-      return createElement("span", null, theme);
+      const [theme, , , { loading }] = useSecureStorage("theme", "light");
+      return createElement("span", null, `${theme}:${loading}`);
     };
-    expect(renderToString(createElement(Component))).toBe("<span>light</span>");
-    expect(() => setter!("dark")).not.toThrow();
+    expect(renderToString(createElement(Component))).toBe("<span>light:true</span>");
   });
 });
 
@@ -76,54 +64,29 @@ describe("package exports (resolved by name, as consumers do)", () => {
   const run = (code: string, type: "module" | "commonjs") =>
     execFileSync(process.execPath, [`--input-type=${type}`, "-e", code], { encoding: "utf8", cwd: root }).trim();
 
-  it("ESM: root and /react entries resolve, and share one storage instance", () => {
+  it("native ESM: default and named imports of every entry", () => {
     const out = run(
-      `import s from "react-secure-storage";
-       import { useSecureStorage } from "react-secure-storage/react";
-       import hookDefault from "react-secure-storage/react";
-       import { createRequire } from "node:module";
-       const require = createRequire(import.meta.url);
-       const deep = require("react-secure-storage/dist/index.js");
-       console.log([typeof s.setItem, typeof useSecureStorage, hookDefault === useSecureStorage, deep === s].join(","));`,
+      `import storage, { configure } from "react-secure-storage";
+       import syncStorage, { configure as configureSync } from "react-secure-storage/sync";
+       import useDefault, { useSecureStorage } from "react-secure-storage/react";
+       console.log([typeof storage.getItem, typeof configure, typeof syncStorage.ready, typeof configureSync, useDefault === useSecureStorage].join(","));`,
       "module"
     );
-    expect(out).toBe("function,function,true,true");
+    expect(out).toBe("function,function,function,function,true");
   });
 
-  it("CommonJS: require of root, /react and deep dist paths", () => {
+  it("CommonJS: require() and require().default of every entry", () => {
     const out = run(
-      `const s = require("react-secure-storage");
-       const { useSecureStorage } = require("react-secure-storage/react");
-       console.log([typeof s.setItem, s.default === s, typeof useSecureStorage, require("react-secure-storage/dist/index.js") === s].join(","));`,
+      `const storage = require("react-secure-storage");
+       const syncStorage = require("react-secure-storage/sync");
+       const hook = require("react-secure-storage/react");
+       console.log([storage.default === storage, typeof storage.configure, syncStorage.default === syncStorage, typeof hook.useSecureStorage, hook.default === hook].join(","));`,
       "commonjs"
     );
-    expect(out).toBe("function,true,function,true");
+    expect(out).toBe("true,function,true,function,true");
+  });
+
+  it("does not expose internal paths", () => {
+    expect(() => run(`require("react-secure-storage/dist/core/store.js")`, "commonjs")).toThrow();
   });
 });
-
-describe("module formats (built package)", () => {
-  const dist = resolve(import.meta.dirname, "../../dist/index.js");
-  // Run in a real Node process: vitest's own module loader would hide Node's ESM/CommonJS interop behaviour.
-  const node = (code: string, type: "module" | "commonjs") =>
-    execFileSync(process.execPath, [`--input-type=${type}`, "-e", code], { encoding: "utf8" }).trim();
-  const check = (expr: string) =>
-    `const s = ${expr}; console.log([typeof s.setItem, typeof s.getItem, typeof s.removeItem, typeof s.clear, String(s.getItem("k"))].join(","));`;
-
-  it("default import from native Node ESM (React Router / Remix / Astro SSR)", () => {
-    expect(node(`import s0 from ${JSON.stringify(dist)}; ${check("s0")}`, "module")).toBe("function,function,function,function,null");
-  });
-
-  it("require() returns the instance", () => {
-    expect(node(check(`require(${JSON.stringify(dist)})`), "commonjs")).toBe("function,function,function,function,null");
-  });
-
-  it("require().default still works (existing CommonJS and transpiled consumers)", () => {
-    expect(node(check(`require(${JSON.stringify(dist)}).default`), "commonjs")).toBe("function,function,function,function,null");
-  });
-
-  it("all forms share one instance", () => {
-    const out = node(`import s0 from ${JSON.stringify(dist)}; import { createRequire } from "node:module"; const r = createRequire(import.meta.url)(${JSON.stringify(dist)}); console.log(s0 === r && r === r.default);`, "module");
-    expect(out).toBe("true");
-  });
-});
-

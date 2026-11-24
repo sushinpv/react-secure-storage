@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "main": "../dist/sync.js",
+  "types": "../dist/sync.d.ts"
+}

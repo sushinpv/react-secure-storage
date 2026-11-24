@@ -12,12 +12,41 @@ const fixtures = {
 } as const;
 
 export type FixtureName = keyof typeof fixtures;
-export type FixtureOptions = { fixture: FixtureName; ssr: boolean; prefix: string; paths: readonly string[] };
+export type FixtureOptions = {
+  fixture: FixtureName;
+  ssr: boolean;
+  prefix: string;
+  paths: readonly string[];
+  /** Expected cipher: AES-GCM on secure origins, legacy (v1 fingerprint key) on plain http */
+  alg: "AES-GCM" | "legacy";
+};
 
 const selected = (process.env.E2E_FIXTURES?.split(",") ?? Object.keys(fixtures)) as FixtureName[];
 const browsers = { chromium: devices["Desktop Chrome"], firefox: devices["Desktop Firefox"], webkit: devices["Desktop Safari"] };
 // All browser engines on the client-only app; Chromium on the SSR apps (SSR behaviour does not depend on the browser).
 const browsersFor = (name: FixtureName) => (name === "vite" ? Object.keys(browsers) : ["chromium"]) as (keyof typeof browsers)[];
+
+const projectsFor = (name: FixtureName) => {
+  const base = { fixture: name, ssr: fixtures[name].ssr, prefix: fixtures[name].prefix, paths: fixtures[name].paths };
+  const projects: { name: string; use: FixtureOptions & Record<string, unknown> }[] = browsersFor(name).map((browser) => ({
+    name: `${name}-${browser}`,
+    use: { ...browsers[browser], ...base, alg: "AES-GCM" as const, baseURL: `http://${name === "vite" ? "127.0.0.1" : "localhost"}:${fixtures[name].port}` },
+  }));
+  if (name === "vite") {
+    // Plain http on a non-localhost name is not a secure context: no Web Crypto, so the library falls back
+    projects.push({
+      name: "vite-insecure-http-chromium",
+      use: {
+        ...browsers.chromium,
+        ...base,
+        alg: "legacy" as const,
+        baseURL: `http://insecure.test:${fixtures.vite.port}`,
+        launchOptions: { args: ["--host-resolver-rules=MAP insecure.test 127.0.0.1"] },
+      },
+    });
+  }
+  return projects;
+};
 
 export default defineConfig<FixtureOptions>({
   testDir: "tests/e2e",
@@ -26,23 +55,11 @@ export default defineConfig<FixtureOptions>({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
   use: { trace: "retain-on-failure" },
-  projects: selected.flatMap((name) =>
-    browsersFor(name).map((browser) => ({
-      name: `${name}-${browser}`,
-      use: {
-        ...browsers[browser],
-        baseURL: `http://localhost:${fixtures[name].port}`,
-        fixture: name,
-        ssr: fixtures[name].ssr,
-        prefix: fixtures[name].prefix,
-        paths: fixtures[name].paths,
-      },
-    }))
-  ),
+  projects: selected.flatMap(projectsFor),
   webServer: selected.map((name) => ({
     command: "npm start",
     cwd: `tests/fixtures/${name}`,
-    url: `http://localhost:${fixtures[name].port}`,
+    url: `http://${name === "vite" ? "127.0.0.1" : "localhost"}:${fixtures[name].port}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   })),

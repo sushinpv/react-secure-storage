@@ -1,20 +1,23 @@
 {
   "name": "react-secure-storage",
-  "version": "1.4.0",
-  "description": "Securely store data in browser localStorage, safe for SSR and CSR",
+  "version": "2.0.0",
+  "description": "Encrypted localStorage for React and any browser app: Web Crypto, async and sync APIs, React hook, SSR-safe",
   "author": "Sushin Pv",
   "main": "dist/index.js",
-  "types": "dist/types.d.ts",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/types.d.ts",
+      "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./sync": {
+      "types": "./dist/sync.d.ts",
+      "default": "./dist/sync.js"
     },
     "./react": {
       "types": "./dist/react.d.ts",
       "default": "./dist/react.js"
     },
-    "./dist/*": "./dist/*",
     "./package.json": "./package.json"
   },
   "repository": {
@@ -35,7 +38,7 @@
     "murmurhash-js": "^1.0.0"
   },
   "scripts": {
-    "build:lib": "rm -rf dist && NODE_ENV=production babel src/lib --out-dir dist --extensions \".ts,.tsx\" --ignore \"src/lib/**/*.d.ts\" && cp src/lib/types.d.ts dist/types.d.ts && cp src/lib/types.react.d.ts dist/react.d.ts && node scripts/cjs-interop.mjs",
+    "build:lib": "rm -rf dist && NODE_ENV=production babel src/lib --out-dir dist --extensions \".ts,.tsx\" --ignore \"src/lib/**/*.d.ts\" && tsc -p tsconfig.build.json && node scripts/cjs-interop.mjs",
     "prepack": "npm run build:lib",
     "typecheck": "tsc -p tsconfig.lib.json",
     "test": "npm run build:lib && vitest run",
@@ -81,6 +84,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitest/coverage-v8": "^5.1.1",
     "core-js": "^3.22.8",
+    "fake-indexeddb": "^6.2.8",
     "jsdom": "^31.0.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
@@ -91,6 +95,7 @@
   },
   "files": [
     "dist",
+    "sync",
     "react"
   ],
   "sideEffects": false,

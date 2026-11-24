@@ -1,70 +1,94 @@
-const SUPPORTED_PREFIX = ["", "REACT_APP_", "NEXT_PUBLIC_", "VITE_"];
-
-export type SECURE_LOCAL_STORAGE_KEYS = "SECURE_LOCAL_STORAGE_DISABLED_KEYS" | "SECURE_LOCAL_STORAGE_PREFIX" | "SECURE_LOCAL_STORAGE_HASH_KEY";
-
 /**
- * Function to get SECURE_LOCAL_STORAGE_HASH_KEY
- * @returns
+ * Reads configuration from environment variables.
+ *
+ * Each variable is read with a literal `process.env.NAME` expression so bundlers (Next.js, Vite `define`, webpack
+ * DefinePlugin) can inline it at build time. Supported name prefixes: none, REACT_APP_, NEXT_PUBLIC_, VITE_.
+ * Inside Cypress, values come from `Cypress.env()`.
  */
-const getHashKey = () => {
-  let value: string | null | undefined = null;
+type EnvName =
+  | "SECURE_LOCAL_STORAGE_HASH_KEY"
+  | "SECURE_LOCAL_STORAGE_PREFIX"
+  | "SECURE_LOCAL_STORAGE_DISABLED_KEYS"
+  | "SECURE_LOCAL_STORAGE_MIGRATE"
+  | "SECURE_LOCAL_STORAGE_FALLBACK";
+
+const FRAMEWORK_PREFIXES = ["", "REACT_APP_", "NEXT_PUBLIC_", "VITE_"];
+
+const first = (read: () => (string | undefined)[]): string | null => {
   try {
-    if (typeof Cypress != "undefined") {
-      value = Cypress.env("SECURE_LOCAL_STORAGE_HASH_KEY") || Cypress.env("REACT_APP_SECURE_LOCAL_STORAGE_HASH_KEY") || Cypress.env("NEXT_PUBLIC_SECURE_LOCAL_STORAGE_HASH_KEY") || Cypress.env("VITE_SECURE_LOCAL_STORAGE_HASH_KEY");
-    } else if (typeof process.env != "undefined") {
-      value = process.env.SECURE_LOCAL_STORAGE_HASH_KEY || process.env.REACT_APP_SECURE_LOCAL_STORAGE_HASH_KEY || process.env.NEXT_PUBLIC_SECURE_LOCAL_STORAGE_HASH_KEY || process.env.VITE_SECURE_LOCAL_STORAGE_HASH_KEY;
-    } else {
-      console.warn(`react-secure-storage : process is not defined! Just a warning!`);
-    }
+    for (const value of read()) if (value) return value;
   } catch (ex) {
-    return null;
+    // `process` is not defined (e.g. Vite without a `process.env` define)
   }
-  return value;
+  return null;
 };
 
-/**
- * Function to get SECURE_LOCAL_STORAGE_PREFIX
- * @returns
- */
-const getStoragePrefix = () => {
-  let value: string | null | undefined = null;
-  try {
-    if (typeof Cypress != "undefined") {
-      value = Cypress.env("SECURE_LOCAL_STORAGE_PREFIX") || Cypress.env("REACT_APP_SECURE_LOCAL_STORAGE_PREFIX") || Cypress.env("NEXT_PUBLIC_SECURE_LOCAL_STORAGE_PREFIX") || Cypress.env("VITE_SECURE_LOCAL_STORAGE_PREFIX");
-    } else if (typeof process.env != "undefined") {
-      value = process.env.SECURE_LOCAL_STORAGE_PREFIX || process.env.REACT_APP_SECURE_LOCAL_STORAGE_PREFIX || process.env.NEXT_PUBLIC_SECURE_LOCAL_STORAGE_PREFIX || process.env.VITE_SECURE_LOCAL_STORAGE_PREFIX;
-    } else {
-      console.warn(`react-secure-storage : process is not defined! Just a warning!`);
-    }
-  } catch (ex) {
-    return null;
+const fromCypress = (name: EnvName): string | null => {
+  for (const prefix of FRAMEWORK_PREFIXES) {
+    const value = Cypress.env(prefix + name);
+    if (value) return value;
   }
-  return value;
+  return null;
 };
-/**
- * Function to get SECURE_LOCAL_STORAGE_DISABLED_KEYS
- * @returns
- */
-const getDisabledKeys = () => {
-  let value: string | null | undefined = null;
-  try {
-    if (typeof Cypress != "undefined") {
-      value = Cypress.env("SECURE_LOCAL_STORAGE_DISABLED_KEYS") || Cypress.env("REACT_APP_SECURE_LOCAL_STORAGE_DISABLED_KEYS") || Cypress.env("NEXT_PUBLIC_SECURE_LOCAL_STORAGE_DISABLED_KEYS") || Cypress.env("VITE_SECURE_LOCAL_STORAGE_DISABLED_KEYS");
-    } else if (typeof process.env != "undefined") {
-      value = process.env.SECURE_LOCAL_STORAGE_DISABLED_KEYS || process.env.REACT_APP_SECURE_LOCAL_STORAGE_DISABLED_KEYS || process.env.NEXT_PUBLIC_SECURE_LOCAL_STORAGE_DISABLED_KEYS || process.env.VITE_SECURE_LOCAL_STORAGE_DISABLED_KEYS;
-    } else {
-      console.warn(`react-secure-storage : process is not defined! Just a warning!`);
-    }
-  } catch (ex) {
-    return null;
-  }
-  return value;
-};
+
+const inCypress = () => typeof Cypress !== "undefined";
+
+const getHashKey = () =>
+  inCypress()
+    ? fromCypress("SECURE_LOCAL_STORAGE_HASH_KEY")
+    : first(() => [
+        process.env.SECURE_LOCAL_STORAGE_HASH_KEY,
+        process.env.REACT_APP_SECURE_LOCAL_STORAGE_HASH_KEY,
+        process.env.NEXT_PUBLIC_SECURE_LOCAL_STORAGE_HASH_KEY,
+        process.env.VITE_SECURE_LOCAL_STORAGE_HASH_KEY,
+      ]);
+
+const getStoragePrefix = () =>
+  inCypress()
+    ? fromCypress("SECURE_LOCAL_STORAGE_PREFIX")
+    : first(() => [
+        process.env.SECURE_LOCAL_STORAGE_PREFIX,
+        process.env.REACT_APP_SECURE_LOCAL_STORAGE_PREFIX,
+        process.env.NEXT_PUBLIC_SECURE_LOCAL_STORAGE_PREFIX,
+        process.env.VITE_SECURE_LOCAL_STORAGE_PREFIX,
+      ]);
+
+const getDisabledKeys = () =>
+  inCypress()
+    ? fromCypress("SECURE_LOCAL_STORAGE_DISABLED_KEYS")
+    : first(() => [
+        process.env.SECURE_LOCAL_STORAGE_DISABLED_KEYS,
+        process.env.REACT_APP_SECURE_LOCAL_STORAGE_DISABLED_KEYS,
+        process.env.NEXT_PUBLIC_SECURE_LOCAL_STORAGE_DISABLED_KEYS,
+        process.env.VITE_SECURE_LOCAL_STORAGE_DISABLED_KEYS,
+      ]);
+
+const getMigrate = () =>
+  inCypress()
+    ? fromCypress("SECURE_LOCAL_STORAGE_MIGRATE")
+    : first(() => [
+        process.env.SECURE_LOCAL_STORAGE_MIGRATE,
+        process.env.REACT_APP_SECURE_LOCAL_STORAGE_MIGRATE,
+        process.env.NEXT_PUBLIC_SECURE_LOCAL_STORAGE_MIGRATE,
+        process.env.VITE_SECURE_LOCAL_STORAGE_MIGRATE,
+      ]);
+
+const getFallback = () =>
+  inCypress()
+    ? fromCypress("SECURE_LOCAL_STORAGE_FALLBACK")
+    : first(() => [
+        process.env.SECURE_LOCAL_STORAGE_FALLBACK,
+        process.env.REACT_APP_SECURE_LOCAL_STORAGE_FALLBACK,
+        process.env.NEXT_PUBLIC_SECURE_LOCAL_STORAGE_FALLBACK,
+        process.env.VITE_SECURE_LOCAL_STORAGE_FALLBACK,
+      ]);
 
 const envHelper = {
   getHashKey,
   getStoragePrefix,
   getDisabledKeys,
+  getMigrate,
+  getFallback,
 };
 
 export default envHelper;

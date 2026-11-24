@@ -1,15 +1,3 @@
-import envHelper from "./envHelper";
-
-/**
- * Function which is used to get the secure prefix
- * @returns
- */
-export const getSecurePrefix = (): string => {
-  let KEY_PREFIX = envHelper.getStoragePrefix() || "@secure.";
-  if (!KEY_PREFIX.endsWith(".")) return KEY_PREFIX + ".";
-  return KEY_PREFIX;
-};
-
 export const FINGERPRINT_KEYS = {
   USERAGENT: "UserAgent",
   SCREEN_PRINT: "ScreenPrint",
@@ -25,33 +13,23 @@ export const FINGERPRINT_KEYS = {
   HOSTNAME: "Hostname",
 };
 
-/**
- * Function which is used to get all the disabled keys
- * @returns
- */
-export const getDisabledKeys = (): string[] => {
-  let DISABLED_KEYS = envHelper.getDisabledKeys() || "";
-  if (DISABLED_KEYS === "") return [];
+const ALL_FINGERPRINT_KEYS = Object.values(FINGERPRINT_KEYS);
 
-  const allOptions = [
-    FINGERPRINT_KEYS.USERAGENT,
-    FINGERPRINT_KEYS.SCREEN_PRINT,
-    FINGERPRINT_KEYS.PLUGINS,
-    FINGERPRINT_KEYS.FONTS,
-    FINGERPRINT_KEYS.LOCAL_STORAGE,
-    FINGERPRINT_KEYS.SESSION_STORAGE,
-    FINGERPRINT_KEYS.TIMEZONE,
-    FINGERPRINT_KEYS.LANGUAGE,
-    FINGERPRINT_KEYS.SYSTEM_LANGUAGE,
-    FINGERPRINT_KEYS.COOKIE,
-    FINGERPRINT_KEYS.CANVAS,
-    FINGERPRINT_KEYS.HOSTNAME,
-  ];
+/**
+ * Normalise disabled fingerprint keys given as a `|`-separated string (environment variable) or an array (configure).
+ * Unknown names are dropped with a warning.
+ */
+export const parseDisabledKeys = (value: string | string[] | null | undefined): string[] => {
+  if (!value) return [];
+  const names = Array.isArray(value) ? value : value.split("|");
   const response: string[] = [];
-  DISABLED_KEYS.split("|").forEach((key) => {
-    if (key === "") {
-    } else if (allOptions.includes(key)) response.push(key);
+  names.forEach((key) => {
+    if (key === "") return;
+    if (ALL_FINGERPRINT_KEYS.includes(key)) response.push(key);
     else console.warn(`react-secure-storage : ${key} is not present in the available disabled keys options! Please go through the documentation`);
   });
   return response;
 };
+
+/** Normalise the storage prefix so it always ends with a dot */
+export const normalizePrefix = (prefix: string): string => (prefix.endsWith(".") ? prefix : prefix + ".");

@@ -15,8 +15,9 @@
     "jsx": "react-jsx",
     "types": ["node"],
     "paths": {
-      "react-secure-storage": ["./src/lib/types.d.ts"],
-      "react-secure-storage/react": ["./src/lib/types.react.d.ts"]
+      "react-secure-storage": ["./src/lib/index.ts"],
+      "react-secure-storage/sync": ["./src/lib/sync.ts"],
+      "react-secure-storage/react": ["./src/lib/react.ts"]
     }
   },
   "include": ["src/lib", "tests", "vitest.config.mts", "playwright.config.ts", "scripts"],

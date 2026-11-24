@@ -4,8 +4,12 @@
     [
       "@babel/preset-env",
       {
-        "useBuiltIns": "entry",
-        "targets": "> 0.25%, not dead"
+        "targets": {
+          "esmodules": true
+        },
+        "exclude": [
+          "proposal-dynamic-import"
+        ]
       }
     ]
   ]

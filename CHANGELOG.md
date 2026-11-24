@@ -1,5 +1,32 @@
 # Changelog
 
+## 2.0.0
+
+A new encryption key, an async API, and a new storage format. See [Upgrading from v1](README.md#upgrading-from-v1).
+
+### Breaking changes
+- **Async API.** `getItem`, `setItem`, `removeItem` and `clear` return Promises. In plain JavaScript, unchanged code like `if (secureLocalStorage.getItem("loggedIn"))` is always true because a Promise is an object; add `await`, or switch to the sync entry.
+- **New storage format.** Values are stored under `<prefix>2.<key>` as AES-GCM envelopes. v1 entries are kept but not read; set `migrate: true` to move them into v2.
+- `clear()` also removes v1 entries.
+- `useSecureStorage` no longer returns the stored value on the first render in client-only apps; it returns `initialValue` with `loading: true` until the value is decrypted.
+- Only `react-secure-storage`, `react-secure-storage/sync` and `react-secure-storage/react` can be imported; `react-secure-storage/dist/*` deep imports were removed.
+- `SECURE_LOCAL_STORAGE_HASH_KEY` and `SECURE_LOCAL_STORAGE_DISABLED_KEYS` only apply in fallback mode and to migration.
+
+### Added
+- Web Crypto encryption: a random, non-extractable 256-bit AES-GCM key per site, kept in IndexedDB, with a random nonce per write and the key name authenticated. Copied values can't be decrypted in another browser profile, and tampered or swapped values read as `null`.
+- `react-secure-storage/sync`: `await ready()` once, then synchronous reads from memory and background writes. Shares data with the async entry and the hook.
+- `useSecureStorage` returns a 4th item, `{ loading }`.
+- `configure({ prefix, migrate, fallback, hashKey, disabledKeys })`, exported from every entry, overriding environment variables. Must run before the first storage call.
+- Fallback to the v1 fingerprint key when Web Crypto or IndexedDB is unavailable (plain http, some private modes), reported as a `fallback` error. crypto-js is loaded only in that case, as a separate chunk.
+- Strict mode: `fallback: false` / `SECURE_LOCAL_STORAGE_FALLBACK=false`.
+- Opt-in migration of v1 data: `migrate: true` / `SECURE_LOCAL_STORAGE_MIGRATE=true`. Safe to interrupt; resumes on the next load.
+- New error types: `fallback` and `config`.
+- `scripts/benchmark.mjs` and published benchmark numbers.
+
+### Fixed
+- Empty strings read back as `null` after a reload.
+- Values could be swapped between keys without detection.
+
 ## 1.4.0
 
 ### Added

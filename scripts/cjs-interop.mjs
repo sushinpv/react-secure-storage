@@ -11,7 +11,7 @@
 import { appendFileSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const ENTRIES = ["index.js", "react.js"];
+const ENTRIES = ["index.js", "sync.js", "react.js"];
 const marker = "// cjs-interop";
 
 for (const file of ENTRIES) {

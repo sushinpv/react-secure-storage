@@ -1,5 +1,5 @@
 import murmurhash3_32_gc from "murmurhash-js/murmurhash3_gc";
-import { FINGERPRINT_KEYS, getDisabledKeys } from "./utils";
+import { FINGERPRINT_KEYS } from "../utils";
 
 // ClientJS prototype which contains all methods.
 const ClientJS = class {
@@ -8,10 +8,9 @@ const ClientJS = class {
   //
 
   // Get Fingerprint.  Return a 32-bit integer representing the browsers fingerprint.
-  getFingerprint() {
+  getFingerprint(disabledKeys: string[]) {
     let bar = "|";
 
-    const disabledKeys = getDisabledKeys();
     let key = "";
     if (!disabledKeys.includes(FINGERPRINT_KEYS.USERAGENT)) {
       key += navigator.userAgent + bar;

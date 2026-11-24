@@ -67,7 +67,7 @@ jobs:
       - name: Verify package contents
         run: |
           tar -tzf .pack/*.tgz | sort | tee contents.txt
-          for f in package/dist/index.js package/dist/types.d.ts package/dist/react.js package/dist/react.d.ts package/react/package.json package/package.json package/LICENSE; do
+          for f in package/dist/index.js package/dist/index.d.ts package/dist/sync.js package/dist/sync.d.ts package/dist/react.js package/dist/react.d.ts package/dist/core/legacy.js package/sync/package.json package/react/package.json package/package.json package/LICENSE; do
             grep -qx "$f" contents.txt || { echo "::error::missing $f in package"; exit 1; }
           done
           if grep -E '\.env|^package/src/' contents.txt; then echo "::error::unexpected files in package"; exit 1; fi
@@ -100,6 +100,9 @@ jobs:
         run: npx playwright install --with-deps ${{ matrix.fixture == 'vite' && 'chromium firefox webkit' || 'chromium' }}
       - name: Run Playwright
         run: npx playwright test
+      - name: Benchmark smoke test
+        if: matrix.fixture == 'vite'
+        run: node scripts/benchmark.mjs --quick
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@v4

@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "start": "vite preview --port 3102 --strictPort"
+    "start": "vite preview --host 127.0.0.1 --port 3102 --strictPort"
   },
   "dependencies": {
     "react": "19.3.1",

@@ -1,47 +1,86 @@
-import { useCallback, useRef, useSyncExternalStore } from "react";
-import secureLocalStorage, { type SecureStorageValue } from "./index";
+import { useCallback, useEffect, useRef, useState } from "react";
+import store from "./core/store";
+import type { SecureStorageValue } from "./core/types";
 
+export type { SecureStorageValue } from "./core/types";
+
+/** Set a new value, or compute it from the previous one. Setting null removes the key. */
 export type SetSecureValue<T> = (value: T | null | ((previous: T) => T | null)) => void;
 
-const getServerSnapshot = () => null;
+export interface SecureStorageStatus {
+  /** True on the server, during hydration and until the stored value has been decrypted */
+  loading: boolean;
+}
+
+interface HookState<T> {
+  key: string;
+  loading: boolean;
+  value: T | null;
+}
 
 /**
  * React hook for a single secure storage key.
  *
- * Hydration-safe: during server rendering and hydration it returns `initialValue`, then the stored value once
- * the component is mounted in the browser. In client-only apps the stored value is returned on the first render.
- * Re-renders when the key changes in this tab or in another tab.
+ * Returns `initialValue` on the server, during hydration and while the stored value is being decrypted (`loading` is
+ * true), then the stored value. Re-renders when the key changes in this tab or another tab.
  *
- * @returns `[value, setValue, removeValue]`; `setValue(null)` removes the key
+ * @returns `[value, setValue, removeValue, { loading }]`; `setValue(null)` removes the key
  */
-export function useSecureStorage<T = SecureStorageValue>(key: string, initialValue: T): [T, SetSecureValue<T>, () => void];
-export function useSecureStorage<T extends SecureStorageValue = SecureStorageValue>(key: string): [T | null, SetSecureValue<T | null>, () => void];
+export function useSecureStorage<T = SecureStorageValue>(key: string, initialValue: T): [T, SetSecureValue<T>, () => void, SecureStorageStatus];
+export function useSecureStorage<T = SecureStorageValue>(key: string): [T | null, SetSecureValue<T | null>, () => void, SecureStorageStatus];
 export function useSecureStorage<T>(key: string, initialValue: T | null = null) {
+  const [state, setState] = useState<HookState<T>>({ key, loading: true, value: null });
+  const latest = useRef(state);
   const initialRef = useRef(initialValue);
   initialRef.current = initialValue;
+  /** Incremented for every read and write; a read only applies if nothing newer happened meanwhile */
+  const version = useRef(0);
 
-  const subscribe = useCallback(
-    (notify: () => void) =>
-      secureLocalStorage.onChange((changed) => {
-        if (changed === null || changed === key) notify();
-      }),
-    [key]
-  );
-  const getSnapshot = useCallback(() => secureLocalStorage.getItem(key) as T | null, [key]);
-  const stored = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const apply = useCallback((next: HookState<T>) => {
+    latest.current = next;
+    setState(next);
+  }, []);
+
+  const load = useCallback(() => {
+    const id = ++version.current;
+    store.getItem(key).then((value) => {
+      if (id === version.current) apply({ key, loading: false, value: value as T | null });
+    });
+  }, [key, apply]);
+
+  useEffect(() => {
+    if (latest.current.key !== key) apply({ key, loading: true, value: null });
+    load();
+    const unsubscribe = store.onChange((changed) => {
+      if (changed === null || changed === key) load();
+    });
+    return () => {
+      unsubscribe();
+      version.current++;
+    };
+  }, [key, load, apply]);
 
   const setValue = useCallback(
     (next: T | null | ((previous: T | null) => T | null)) => {
-      const previous = (secureLocalStorage.getItem(key) as T | null) ?? initialRef.current;
+      const current = latest.current.key === key ? latest.current.value : null;
+      const previous = current ?? initialRef.current;
       const value = typeof next === "function" ? (next as (previous: T | null) => T | null)(previous) : next;
-      if (value === null || value === undefined) secureLocalStorage.removeItem(key);
-      else secureLocalStorage.setItem(key, value as SecureStorageValue);
+      version.current++; // discard reads that started before this write
+      apply({ key, loading: false, value: value ?? null });
+      const save = value === null || value === undefined ? store.removeItem(key) : store.setItem(key, value as SecureStorageValue);
+      save.then(
+        (saved) => {
+          if (saved === false) load();
+        },
+        () => load()
+      );
     },
-    [key]
+    [key, apply, load]
   );
-  const removeValue = useCallback(() => secureLocalStorage.removeItem(key), [key]);
+  const removeValue = useCallback(() => setValue(null), [setValue]);
 
-  return [stored ?? initialValue, setValue, removeValue];
+  const current = state.key === key ? state : { key, loading: true, value: null };
+  return [current.value ?? initialValue, setValue, removeValue, { loading: current.loading }];
 }
 
 export default useSecureStorage;
