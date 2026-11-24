@@ -1,6 +1,7 @@
 import { LocalStorageItem } from "./coreTypes";
 import EncryptionService from "./encryption";
-import getAllLocalStorageItems from "./localStorageHelpers";
+import { getBrowserStorage } from "./environment";
+import getAllLocalStorageItems, { DATA_TYPES, parseStorageKey } from "./localStorageHelpers";
 import { getSecurePrefix } from "./utils";
 
 const KEY_PREFIX = getSecurePrefix();
@@ -27,12 +28,21 @@ const getLocalKey = (key: string, value: string | object | number | boolean | nu
 /**
  * This version of local storage supports the following data types as it is and other data types will be treated as string
  * object, string, number and Boolean
+ *
+ * SSR: on the server (or when localStorage is blocked) every method is a no-op and `getItem` returns `null`.
+ * Nothing is read from storage at import time; data is loaded on the first call in the browser.
  */
 class SecureLocalStorage {
-  private _localStorageItems: LocalStorageItem = {};
+  private _localStorageItems: LocalStorageItem | null = null;
 
-  constructor() {
-    this._localStorageItems = getAllLocalStorageItems();
+  /**
+   * Returns the decrypted in-memory cache, loading it on first use in the browser.
+   * Returns null when storage is unavailable (server, blocked storage); nothing is cached in that case.
+   */
+  private _getItems(): LocalStorageItem | null {
+    if (getBrowserStorage() === null) return null;
+    if (this._localStorageItems === null) this._localStorageItems = getAllLocalStorageItems();
+    return this._localStorageItems;
   }
 
   /**
@@ -41,15 +51,26 @@ class SecureLocalStorage {
    * @param value value to be added `use JSON.stringify(value) or value.toString() to save any other data type`
    */
   setItem(key: string, value: string | object | number | boolean) {
-    if (value === null || value === undefined) this.removeItem(key);
-    else {
-      let parsedValue = typeof value === "object" ? JSON.stringify(value) : value + "";
-      let parsedKeyLocal = getLocalKey(key, value);
-      let parsedKey = KEY_PREFIX + key;
-      if (key != null) this._localStorageItems[parsedKey] = value;
-      const encrypt = new EncryptionService();
-      localStorage.setItem(parsedKeyLocal, encrypt.encrypt(parsedValue));
+    if (value === null || value === undefined) {
+      this.removeItem(key);
+      return;
     }
+    const storage = getBrowserStorage();
+    const items = this._getItems();
+    if (storage === null || items === null) return;
+
+    let parsedValue = typeof value === "object" ? JSON.stringify(value) : value + "";
+    let parsedKeyLocal = getLocalKey(key, value);
+    let parsedKey = KEY_PREFIX + key;
+    if (key != null) items[parsedKey] = value;
+    const encrypt = new EncryptionService();
+    storage.setItem(parsedKeyLocal, encrypt.encrypt(parsedValue));
+
+    // A key keeps a single stored entry: drop entries written for the same key with another data type
+    DATA_TYPES.forEach((type) => {
+      const otherKey = KEY_PREFIX + `${type}.` + key;
+      if (otherKey !== parsedKeyLocal) storage.removeItem(otherKey);
+    });
   }
 
   /**
@@ -58,8 +79,10 @@ class SecureLocalStorage {
    * @returns
    */
   getItem(key: string): string | object | number | boolean | null {
+    const items = this._getItems();
+    if (items === null) return null;
     let parsedKey = KEY_PREFIX + key;
-    return this._localStorageItems[parsedKey] ?? null;
+    return items[parsedKey] ?? null;
   }
 
   /**
@@ -67,19 +90,31 @@ class SecureLocalStorage {
    * @param key to be removed
    */
   removeItem(key: string) {
+    const storage = getBrowserStorage();
+    const items = this._getItems();
+    if (storage === null || items === null) return;
+
     let parsedKey = KEY_PREFIX + key;
-    let value = this._localStorageItems[parsedKey];
-    let parsedKeyLocal = getLocalKey(key, value);
-    if (this._localStorageItems[parsedKey] !== undefined) delete this._localStorageItems[parsedKey];
-    localStorage.removeItem(parsedKeyLocal);
+    if (items[parsedKey] !== undefined) delete items[parsedKey];
+    // Remove every data-type variant, so the entry is removed even if the cached value is missing
+    DATA_TYPES.forEach((type) => storage.removeItem(KEY_PREFIX + `${type}.` + key));
   }
 
   /**
-   * Function to clear secure local storage
+   * Function to clear secure local storage.
+   * Only removes entries written by this library (matching the configured prefix); other localStorage keys are kept.
    */
   clear() {
+    const storage = getBrowserStorage();
+    if (storage === null) return;
+
     this._localStorageItems = {};
-    localStorage.clear();
+    const ownedKeys: string[] = [];
+    for (let i = 0; i < storage.length; i++) {
+      const storageKey = storage.key(i);
+      if (storageKey !== null && parseStorageKey(storageKey) !== null) ownedKeys.push(storageKey);
+    }
+    ownedKeys.forEach((storageKey) => storage.removeItem(storageKey));
   }
 }
 

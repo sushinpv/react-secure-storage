@@ -1,0 +1,20 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      dev-dependencies:
+        dependency-type: development
+  - package-ecosystem: npm
+    directories: ["/tests/fixtures/next", "/tests/fixtures/vite", "/tests/fixtures/react-router"]
+    schedule:
+      interval: monthly
+    groups:
+      fixtures:
+        patterns: ["*"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

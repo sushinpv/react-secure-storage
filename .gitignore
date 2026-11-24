@@ -21,3 +21,24 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# library build output (built in CI and on publish)
+/dist
+
+# e2e
+/.pack
+/test-results
+/playwright-report
+/tests/fixtures/*/node_modules
+/tests/fixtures/*/.next
+/tests/fixtures/*/dist
+/tests/fixtures/*/build
+/tests/fixtures/*/.react-router
+yarn.lock
+
+# shared e2e component copied into each fixture by scripts/setup-e2e.mjs
+/tests/fixtures/next/app/Demo.tsx
+/tests/fixtures/vite/src/Demo.tsx
+/tests/fixtures/react-router/app/Demo.tsx
+/tests/fixtures/next/next-env.d.ts
+/tests/fixtures/next/tsconfig.tsbuildinfo

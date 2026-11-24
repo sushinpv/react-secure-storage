@@ -43,6 +43,16 @@ Secure local storage prefix can be configured using .env file as
 
 
 
+## Security: what this library does and does not protect
+
+React secure storage keeps values **unreadable at a glance** in localStorage (obfuscation at rest). Please be aware of its limits before storing sensitive data:
+
+- The encryption key is derived from browser properties plus `SECURE_LOCAL_STORAGE_HASH_KEY`. The hash key is bundled into your JavaScript, so it is **not secret**, and the browser part of the key is small enough to be guessed. A determined attacker who copies the stored values can decrypt them.
+- Any JavaScript running on your page (XSS, malicious extensions) can read the values through this library.
+- The key changes when the browser fingerprint changes (browser updates, different screen, privacy modes that randomise canvas). Stored values then read as `null`.
+
+Do not use it for auth tokens or secrets: keep those in `httpOnly` cookies. See [SECURITY.md](SECURITY.md).
+
 ### Here are the .env prefix lists for the supported languages that are built-in.
 
 | Language | Prefix       |
@@ -71,7 +81,34 @@ You can use the following methods to read and write items to secure local storag
 |`setItem(key, value)` |To set values to secure storage            |Supports `'String - Object - Number - Boolean'` as value            |
 |`getItem(key)`        |To get values which is saved on secure local storage           | Return null if the key does not exits           |
 |`removeItem(key)`          | To remove specified key from secure local storage|  |
-|`clear()`          | Removed all data from secure local storage|  |
+|`clear()`          | Removes all data written by secure local storage. Other localStorage keys are kept (since 1.3.3)|  |
+
+## How to use with SSR (Next.js, React Router, Remix)
+
+localStorage only exists in the browser. On the server every method is a safe no-op and `getItem` returns `null`. Nothing is read from storage until the first call in the browser.
+
+Because the server cannot see stored values, **read them after the component mounts**, not during render. Otherwise the server HTML (without the value) and the first browser render (with the value) differ, and React reports a hydration mismatch.
+
+    "use client"; // Next.js App Router only
+    import { useEffect, useState } from "react";
+    import secureLocalStorage from "react-secure-storage";
+
+    export default function Profile() {
+      const [user, setUser] = useState(null); // same value on server and first client render
+
+      useEffect(() => {
+        setUser(secureLocalStorage.getItem("user")); // runs only in the browser
+      }, []);
+
+      return <p>{user ? user.name : "Loading…"}</p>;
+    }
+
+Avoid reading during render:
+
+    // ❌ server renders null, browser renders the stored value -> hydration mismatch
+    const user = secureLocalStorage.getItem("user");
+
+This pattern is tested on every change against Next.js (App Router and Pages Router) and React Router framework mode.
 
 ## How to use with Vite
 
@@ -150,7 +187,19 @@ Here is the list of all the supported values `UserAgent|ScreenPrint|Plugins|Font
     export  default  App;
 
 
-## Build Size ! 7.6KB
+## Build Size
+
+About 10.6 KB gzip for the library code (excluding the `crypto-js` and `murmurhash-js` dependencies). CI fails if it exceeds the budget in `scripts/check-size.mjs`.
+
+## Whats new in 1.3.3?
+
+Bug fixes for SSR and storage handling, plus a full automated test suite. See [CHANGELOG.md](CHANGELOG.md).
+
+- `clear()` now removes only data written by this library instead of the whole localStorage
+- Safe on the server: no errors when methods are called during SSR, and nothing is read at import time
+- Works with native Node ESM SSR (`import secureLocalStorage from "react-secure-storage"` in React Router / Remix / Astro servers)
+- Changing a value's type no longer leaves stale entries behind; `removeItem()` always removes the stored entry
+- No crash when canvas or localStorage is blocked
 
 ## Whats new in 1.3.2?
 
@@ -180,12 +229,18 @@ Releasing the first version of react secure local storage, which supports `setIt
 
 ## How do I test this library on my local system & How do I contribute ?
 
-For local testing the library make sure you are installing the `react-scripts` by using `npm i react-scripts` or `yarn add react-scripts`. 
-The react-scripts is removed due to vulnerability issue which is highlighted in here : https://github.com/sushinpv/react-secure-storage/issues/3
+    npm install
+    npm run typecheck
+    npm test                         # unit (jsdom), SSR (Node), and v1.3.2 compatibility tests
+    npm run test:coverage            # same, with coverage thresholds
 
-To contribute on the library, make sure you are creating a development branch for your fix as `dev/{feature/fix}` and create a PR to master branch.
+End-to-end tests build real Next.js, Vite and React Router apps against the packed library:
 
-Before creating the PR, Please make sure to remove the `react-scripts` from the `package.json`. and you are creating a production build for the library by running `yarn build:lib`
+    node scripts/setup-e2e.mjs       # or a subset: node scripts/setup-e2e.mjs vite
+    npx playwright install
+    npm run test:e2e
+
+All of these run in GitHub Actions on every pull request. To contribute, create a branch named `dev/{feature/fix}` and open a PR to `master`. `dist/` is built automatically on publish; do not commit it.
 
 ## Star History
 

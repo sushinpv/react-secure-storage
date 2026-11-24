@@ -442,6 +442,8 @@ const ClientJS = class {
       // return empty string if canvas element not supported
       return "";
     }
+    // getContext returns null when canvas is blocked or unsupported (privacy settings, test environments)
+    if (!ctx) return "";
 
     // https://www.browserleaks.com/canvas#how-does-it-work
     // Text with lowercase/uppercase/punctuation symbols
