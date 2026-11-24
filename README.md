@@ -9,7 +9,7 @@
 [![CI](https://github.com/sushinpv/react-secure-storage/actions/workflows/ci.yml/badge.svg)](https://github.com/sushinpv/react-secure-storage/actions/workflows/ci.yml)
 [![MIT license](https://img.shields.io/badge/license-MIT-22c55e)](LICENSE)
 
-[Install](#install) · [Quick start](#quick-start) · [Async or sync](#async-or-sync) · [React hook](#react-hook) · [SSR](#server-side-rendering) · [Configuration](#configuration) · [Security](#security-model) · [Upgrading from v1](#upgrading-from-v1)
+[Install](#install) · [Quick start](#quick-start) · [Async or sync](#async-or-sync) · [React hook](#react-hook) · [TypeScript](#typescript) · [SSR](#server-side-rendering) · [Configuration](#configuration) · [Security](#security-model) · [Upgrading from v1](#upgrading-from-v1)
 
 </div>
 
@@ -39,6 +39,13 @@ npm install react-secure-storage
 ```sh
 yarn add react-secure-storage
 ```
+
+### Requirements
+
+- **Browsers** with ES module support (roughly Chrome 61+, Edge 16+, Firefox 60+, Safari 10.1+).
+- **HTTPS or localhost** for Web Crypto. On plain `http`, the library [falls back](#security-model) to the weaker v1 key, or refuses in strict mode.
+- **React 18+** for the hook only. The async and sync entries have no React dependency.
+- **Node.js 20+** for server-side rendering (tested on 20, 22 and 24).
 
 ## Quick start
 
@@ -83,6 +90,16 @@ const visits = secureLocalStorage.getItem("visits"); // 13, no await
 
 Before `ready()` resolves, sync reads return `null`. Writes made before then are kept.
 
+| Method | Description |
+| --- | --- |
+| `await ready()` | Decrypts every stored value into memory. Resolves once; safe to call many times. |
+| `isReady` | `true` once `ready()` has finished. |
+| `getItem(key)` | The value from memory, or `null` if missing or not loaded yet. |
+| `setItem(key, value)` | Updates memory immediately and saves in the background. `null` or `undefined` removes the key. If saving fails, memory goes back to the stored value and a `write` error is reported. |
+| `removeItem(key)` / `clear()` | Apply immediately and save in the background. `clear()` also removes v1 data. |
+| `onChange(listener)` | Called when memory changes: after `ready()` (with `null`), after your writes, and when another tab or the async API changes a key. |
+| `onError(listener)` | Same errors as the async entry, including failed background saves. |
+
 **How long `ready()` takes** grows with the amount of stored data, while async reads stay fast:
 
 | Stored data | sync `ready()` (laptop) | sync `ready()` (4× CPU slowdown) | async first `getItem` | async per `getItem` |
@@ -125,6 +142,19 @@ export default function ThemeToggle() {
 
 The hook is hydration-safe: the server and the first browser render both use `initialValue`. Requires React 18 or newer; the other entries don't need React.
 
+## TypeScript
+
+Type declarations are included. Useful exported types:
+
+```ts
+import type { SecureStorageValue, SecureStorageError, SecureStorageOptions, ChangeListener, ErrorListener } from "react-secure-storage";
+import type { SetSecureValue, SecureStorageStatus } from "react-secure-storage/react";
+
+const [user] = useSecureStorage<{ id: number; name: string }>("user"); // { id: number; name: string } | null
+```
+
+`getItem` returns `SecureStorageValue | null`; cast or validate the result to your own type.
+
 ## Server-side rendering
 
 localStorage and the encryption key only exist in the browser. On the server (Next.js, React Router, Remix, Astro):
@@ -158,6 +188,8 @@ Call `configure()` once at startup, before the first storage call. Later calls a
 | `fallback` | `SECURE_LOCAL_STORAGE_FALLBACK` | `true` | Use the v1 fingerprint key when Web Crypto is unavailable. `false` makes storage unavailable instead |
 | `hashKey` | `SECURE_LOCAL_STORAGE_HASH_KEY` | built-in value | Part of the v1 fingerprint key; fallback mode and migration only |
 | `disabledKeys` | `SECURE_LOCAL_STORAGE_DISABLED_KEYS` | none | Browser properties to leave out of the v1 fingerprint key (`\|`-separated in the variable); fallback mode and migration only |
+
+Valid `disabledKeys` names: `UserAgent`, `ScreenPrint`, `Plugins`, `Fonts`, `LocalStorage`, `SessionStorage`, `TimeZone`, `Language`, `SystemLanguage`, `Cookie`, `Canvas`, `Hostname`. In the environment variable, separate them with `|`, for example `SECURE_LOCAL_STORAGE_DISABLED_KEYS=UserAgent|Canvas`. Disabling inputs makes the fallback key less likely to change after a browser update, but easier to guess.
 
 Use the prefix your framework exposes to client code; the unprefixed name works too.
 
@@ -224,6 +256,7 @@ Version 2 is a major release with a new storage format and an async API.
 4. **`clear()` also removes v1 data.**
 5. **The hook** returns a 4th item, `{ loading }`, and no longer has the stored value on the first render in client-only apps. Existing 3-item destructuring keeps working.
 6. **Deep imports** such as `react-secure-storage/dist/...` are no longer available. Use `react-secure-storage`, `/sync` or `/react`.
+7. **Older browsers** without ES module support are no longer supported. See [Requirements](#requirements).
 
 See the [changelog](CHANGELOG.md) for the full list.
 
@@ -234,6 +267,7 @@ See the [changelog](CHANGELOG.md) for the full list.
 | Next.js App Router and Pages Router | ✅ Tested end-to-end (SSR, hydration, server components) |
 | React Router / Remix framework mode | ✅ Tested end-to-end (SSR, loaders, native Node ESM) |
 | Vite + React | ✅ Tested end-to-end in Chromium, Firefox and WebKit, plus fallback on plain http |
+| Browsers | ES module support required (roughly Chrome 61+, Edge 16+, Firefox 60+, Safari 10.1+) |
 | Create React App | ✅ `REACT_APP_` configuration covered by unit tests |
 | Node.js 20, 22, 24 (server) | ✅ Tested in CI |
 | Cross-tab sync | ✅ Tested end-to-end with two open tabs |

@@ -11,6 +11,7 @@ A new encryption key, an async API, and a new storage format. See [Upgrading fro
 - `useSecureStorage` no longer returns the stored value on the first render in client-only apps; it returns `initialValue` with `loading: true` until the value is decrypted.
 - Only `react-secure-storage`, `react-secure-storage/sync` and `react-secure-storage/react` can be imported; `react-secure-storage/dist/*` deep imports were removed.
 - `SECURE_LOCAL_STORAGE_HASH_KEY` and `SECURE_LOCAL_STORAGE_DISABLED_KEYS` only apply in fallback mode and to migration.
+- Browsers without ES module support (roughly older than Chrome 61, Edge 16, Firefox 60, Safari 10.1) are no longer supported. The build now uses native `async`/`await`, which cut the always-loaded code from about 23 KB to 10 KB gzip.
 
 ### Added
 - Web Crypto encryption: a random, non-extractable 256-bit AES-GCM key per site, kept in IndexedDB, with a random nonce per write and the key name authenticated. Copied values can't be decrypted in another browser profile, and tampered or swapped values read as `null`.
