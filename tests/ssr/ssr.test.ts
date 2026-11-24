@@ -56,6 +56,51 @@ describe("SSR (Node, no browser globals)", () => {
   });
 });
 
+describe("useSecureStorage on the server", () => {
+  it("renders the initial value and setters are safe no-ops", () => {
+    for (const id of Object.keys(require.cache)) if (id.includes("/dist/")) delete require.cache[id];
+    const { useSecureStorage } = require("../../dist/react.js");
+    let setter: ((v: unknown) => void) | undefined;
+    const Component = () => {
+      const [theme, setTheme] = useSecureStorage("theme", "light");
+      setter = setTheme;
+      return createElement("span", null, theme);
+    };
+    expect(renderToString(createElement(Component))).toBe("<span>light</span>");
+    expect(() => setter!("dark")).not.toThrow();
+  });
+});
+
+describe("package exports (resolved by name, as consumers do)", () => {
+  const root = resolve(import.meta.dirname, "../..");
+  const run = (code: string, type: "module" | "commonjs") =>
+    execFileSync(process.execPath, [`--input-type=${type}`, "-e", code], { encoding: "utf8", cwd: root }).trim();
+
+  it("ESM: root and /react entries resolve, and share one storage instance", () => {
+    const out = run(
+      `import s from "react-secure-storage";
+       import { useSecureStorage } from "react-secure-storage/react";
+       import hookDefault from "react-secure-storage/react";
+       import { createRequire } from "node:module";
+       const require = createRequire(import.meta.url);
+       const deep = require("react-secure-storage/dist/index.js");
+       console.log([typeof s.setItem, typeof useSecureStorage, hookDefault === useSecureStorage, deep === s].join(","));`,
+      "module"
+    );
+    expect(out).toBe("function,function,true,true");
+  });
+
+  it("CommonJS: require of root, /react and deep dist paths", () => {
+    const out = run(
+      `const s = require("react-secure-storage");
+       const { useSecureStorage } = require("react-secure-storage/react");
+       console.log([typeof s.setItem, s.default === s, typeof useSecureStorage, require("react-secure-storage/dist/index.js") === s].join(","));`,
+      "commonjs"
+    );
+    expect(out).toBe("function,true,function,true");
+  });
+});
+
 describe("module formats (built package)", () => {
   const dist = resolve(import.meta.dirname, "../../dist/index.js");
   // Run in a real Node process: vitest's own module loader would hide Node's ESM/CommonJS interop behaviour.

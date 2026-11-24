@@ -4,6 +4,7 @@
  */
 import { useEffect, useState } from "react";
 import secureLocalStorage from "react-secure-storage";
+import { useSecureStorage } from "react-secure-storage/react";
 
 type Values = { object: unknown; number: unknown; flag: unknown };
 
@@ -12,6 +13,18 @@ const read = (): Values => ({
   number: secureLocalStorage.getItem("number"),
   flag: secureLocalStorage.getItem("flag"),
 });
+
+/** Hook-based state: hydration-safe without useEffect, and synced across tabs */
+function Counter() {
+  const [count, setCount, resetCount] = useSecureStorage("counter", 0);
+  return (
+    <section>
+      <p data-testid="counter">{count}</p>
+      <button onClick={() => setCount((n) => n + 1)}>increment</button>
+      <button onClick={resetCount}>reset counter</button>
+    </section>
+  );
+}
 
 export default function Demo() {
   const [values, setValues] = useState<Values | null>(null);
@@ -48,6 +61,7 @@ export default function Demo() {
       >
         clear
       </button>
+      <Counter />
     </main>
   );
 }

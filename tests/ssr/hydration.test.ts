@@ -73,6 +73,14 @@ const hydrate = async (factory: (s: SecureStorage) => FunctionComponent) => {
   return { serverHtml, text: container.textContent, errors };
 };
 
+/** The hook: hydration-safe by design, no useEffect needed */
+const makeHook = () =>
+  function WithHook() {
+    const { useSecureStorage } = require("../../dist/react.js");
+    const [user] = useSecureStorage("user", "loading");
+    return createElement("span", null, user);
+  };
+
 afterEach(() => {
   for (const [k, d] of saved) {
     if (d) Object.defineProperty(globalThis, k, d);
@@ -83,6 +91,13 @@ afterEach(() => {
 describe("hydration", () => {
   it("documented pattern hydrates without mismatch and shows the stored value", async () => {
     const result = await hydrate(makeSafe);
+    expect(result.serverHtml).toBe("<span>loading</span>");
+    expect(result.errors).toEqual([]);
+    expect(result.text).toBe("Alice");
+  });
+
+  it("useSecureStorage hydrates without mismatch and then shows the stored value", async () => {
+    const result = await hydrate(makeHook);
     expect(result.serverHtml).toBe("<span>loading</span>");
     expect(result.errors).toEqual([]);
     expect(result.text).toBe("Alice");

@@ -87,4 +87,40 @@ test.describe("secure storage in a real app", () => {
     expect(response.status()).toBe(200);
     expect(await response.text()).toMatch(/data-testid="server-result">server value: (<!-- -->)?null</);
   });
+
+  test("useSecureStorage: server renders the initial value, then the stored value after hydration", async ({ page, request, paths, ssr, errors }) => {
+    if (ssr) expect(await (await request.get(paths[0])).text()).toContain('data-testid="counter">0<');
+
+    await open(page, paths[0]);
+    await page.getByRole("button", { name: "increment" }).click();
+    await page.getByRole("button", { name: "increment" }).click();
+    await expect(page.getByTestId("counter")).toHaveText("2");
+
+    for (const path of paths) {
+      await open(page, path);
+      await expect(page.getByTestId("counter"), `after loading ${path}`).toHaveText("2");
+    }
+    await page.getByRole("button", { name: "reset counter" }).click();
+    await expect(page.getByTestId("counter")).toHaveText("0");
+    expect(errors).toEqual([]);
+  });
+
+  test("changes in one tab appear in another tab without a reload", async ({ context, paths, errors }) => {
+    const tabA = await context.newPage();
+    const tabB = await context.newPage();
+    for (const tab of [tabA, tabB]) {
+      tab.on("console", (msg) => msg.type() === "error" && errors.push(msg.text()));
+      await open(tab, paths[0]);
+    }
+
+    await tabA.getByRole("button", { name: "increment" }).click();
+    await expect(tabB.getByTestId("counter")).toHaveText("1");
+
+    await tabB.getByRole("button", { name: "increment" }).click();
+    await expect(tabA.getByTestId("counter")).toHaveText("2");
+
+    await tabA.getByRole("button", { name: "clear" }).click();
+    await expect(tabB.getByTestId("counter")).toHaveText("0");
+    expect(errors).toEqual([]);
+  });
 });

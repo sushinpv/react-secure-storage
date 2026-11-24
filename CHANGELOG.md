@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.4.0
+
+### Added
+- `useSecureStorage(key, initialValue)` React hook, imported from `react-secure-storage/react`. Works like `useState`, persists to secure storage, keeps every component using the same key in sync, and is hydration-safe: the server and the hydration render use `initialValue`, then the stored value appears after mount. Requires React 18+ (optional peer dependency; the core still has no React dependency).
+- Cross-tab sync: values changed in another tab or window are picked up through the browser `storage` event, so `getItem` and the hook no longer return stale data.
+- `onChange(listener)` to subscribe to changes made in this tab and in other tabs.
+- `onError(listener)` to observe unreadable values (`decrypt`), rejected writes such as quota exceeded (`write`), and blocked storage (`unavailable`). Errors never include stored values. While a listener is registered, failed writes are reported instead of thrown.
+- Package `exports` map with the `./react` entry. Deep imports under `react-secure-storage/dist/*` keep working.
+- Exported TypeScript types: `SecureStorageValue`, `SecureStorageError`, `ChangeListener`, `ErrorListener`, `SetSecureValue`.
+
+### Fixed
+- When a write failed (e.g. quota exceeded), `getItem` returned the new value for the rest of the session even though it was never stored.
+
 ## 1.3.3
 
 ### Fixed

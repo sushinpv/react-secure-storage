@@ -24,7 +24,7 @@ npm install
 | --- | --- |
 | `npm run build:lib` | Builds the library into `dist/` |
 | `npm run typecheck` | Type-checks the library, tests and scripts |
-| `npm test` | Builds, then runs unit (jsdom), SSR and hydration (Node) and 1.3.2 compatibility tests |
+| `npm test` | Builds, then runs unit and hook tests (jsdom), SSR and hydration tests (Node) and 1.3.2 compatibility tests |
 | `npm run test:coverage` | Same as `npm test`, with coverage thresholds |
 | `npm run size` | Checks the built size against the budget |
 | `node scripts/setup-e2e.mjs [next\|vite\|react-router]` | Packs the library and builds the end-to-end test apps |
@@ -39,6 +39,7 @@ npm install
 | `tests/unit/` | Behaviour tests in a simulated browser (jsdom) |
 | `tests/ssr/` | Server-side and hydration tests against the built package |
 | `tests/legacy/` | Compatibility with data written by the published 1.3.2 |
+| `tests/types/` | Compile-time checks of the published type declarations |
 | `tests/fixtures/` | Next.js, Vite and React Router apps used by end-to-end tests |
 | `tests/e2e/` | Playwright tests |
 | `scripts/` | Build, packaging and size scripts |

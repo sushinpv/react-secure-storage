@@ -67,7 +67,7 @@ jobs:
       - name: Verify package contents
         run: |
           tar -tzf .pack/*.tgz | sort | tee contents.txt
-          for f in package/dist/index.js package/dist/types.d.ts package/package.json package/LICENSE; do
+          for f in package/dist/index.js package/dist/types.d.ts package/dist/react.js package/dist/react.d.ts package/react/package.json package/package.json package/LICENSE; do
             grep -qx "$f" contents.txt || { echo "::error::missing $f in package"; exit 1; }
           done
           if grep -E '\.env|^package/src/' contents.txt; then echo "::error::unexpected files in package"; exit 1; fi

@@ -9,7 +9,7 @@
 [![CI](https://github.com/sushinpv/react-secure-storage/actions/workflows/ci.yml/badge.svg)](https://github.com/sushinpv/react-secure-storage/actions/workflows/ci.yml)
 [![MIT license](https://img.shields.io/badge/license-MIT-22c55e)](LICENSE)
 
-[Install](#install) · [Quick start](#quick-start) · [SSR](#server-side-rendering) · [Configuration](#configuration) · [Security](#security-model) · [Contribute](CONTRIBUTING.md)
+[Install](#install) · [Quick start](#quick-start) · [React hook](#react-hook) · [SSR](#server-side-rendering) · [Configuration](#configuration) · [Security](#security-model) · [Contribute](CONTRIBUTING.md)
 
 </div>
 
@@ -23,8 +23,10 @@ It keeps your data types: store a string, number, boolean or object and get the 
 
 - **Encrypted at rest.** AES encryption with a key derived from the browser fingerprint plus your own hash key.
 - **Typed values.** Strings, numbers, booleans and objects come back with the type you stored.
+- **React hook.** `useSecureStorage` gives you state backed by encrypted storage, hydration-safe out of the box.
+- **Synced across tabs.** Changes made in one tab show up in every other open tab of your site.
 - **SSR-safe.** No errors on the server, nothing read at import time, and no data shared between server requests.
-- **Framework-agnostic.** No React runtime dependency; the same API works in any browser app.
+- **Framework-agnostic.** The core has no React dependency; the same API works in any browser app.
 - **Configurable.** Storage prefix, hash key and fingerprint inputs are set through environment variables, with built-in support for React, Vite and Next.js prefixes.
 - **Tested in real apps.** Every change runs against Next.js (App Router and Pages Router), Vite and React Router builds in Chromium, Firefox and WebKit.
 
@@ -69,14 +71,56 @@ The default export is a single shared instance.
 | `getItem(key)` | Returns the stored value with its original type, or `null` if missing or unreadable. |
 | `removeItem(key)` | Removes the key. |
 | `clear()` | Removes every value written by react-secure-storage. Other localStorage keys are kept. |
+| `onChange(listener)` | Calls `listener(key)` when a key changes in this tab or another tab (`key` is `null` after `clear`). Returns an unsubscribe function. |
+| `onError(listener)` | Calls `listener({ type, key, error })` for unreadable values, rejected writes and blocked storage. Returns an unsubscribe function. |
 
-Values are stored as `<prefix><type>.<key>`, for example `@secure.j.settings`. The data is decrypted once, on the first call in the browser, and later reads are served from memory.
+Values are stored as `<prefix><type>.<key>`, for example `@secure.j.settings`. The data is decrypted once, on the first call in the browser, and later reads are served from memory. Writes from other tabs are picked up automatically through the browser's `storage` event.
+
+## React hook
+
+`useSecureStorage` works like `useState`, but the value is kept in secure storage and shared by every component and tab using the same key.
+
+```tsx
+import { useSecureStorage } from "react-secure-storage/react";
+
+export default function ThemeToggle() {
+  const [theme, setTheme, removeTheme] = useSecureStorage("theme", "light");
+
+  return (
+    <>
+      <button onClick={() => setTheme(theme === "light" ? "dark" : "light")}>Theme: {theme}</button>
+      <button onClick={removeTheme}>Reset</button>
+    </>
+  );
+}
+```
+
+| Returned | Description |
+| --- | --- |
+| `value` | The stored value, or `initialValue` when nothing is stored. Without an initial value, `null`. |
+| `setValue(next)` | Stores a value, or computes it from the previous one: `setValue((n) => n + 1)`. `setValue(null)` removes the key. |
+| `removeValue()` | Removes the key; `value` falls back to `initialValue`. |
+
+The hook is **hydration-safe**: on the server and during hydration it returns `initialValue`, then switches to the stored value once the component is mounted. In client-only apps the stored value is returned on the first render. Requires React 18 or newer; the core API works without React.
+
+## Handling errors
+
+Values become unreadable when the browser fingerprint changes, and writes can fail when storage is full. Register a listener to find out:
+
+```ts
+secureLocalStorage.onError(({ type, key }) => {
+  // type: "decrypt" | "write" | "unavailable"
+  reportToMonitoring(`secure storage ${type} error`, { key }); // stored values are never included
+});
+```
+
+While at least one error listener is registered, failed writes are reported to it instead of thrown.
 
 ## Server-side rendering
 
 localStorage only exists in the browser. On the server (Next.js, React Router, Remix, Astro), every method is a no-op and `getItem` returns `null`.
 
-Because the server can't see stored values, **read them after the component mounts**. If you read during render, the server HTML and the first browser render differ, and React reports a hydration mismatch.
+The [React hook](#react-hook) handles this for you. If you use the core API in components, **read values after the component mounts**. If you read during render, the server HTML and the first browser render differ, and React reports a hydration mismatch.
 
 ```tsx
 "use client"; // Next.js App Router only
@@ -170,6 +214,8 @@ Keep session and auth tokens in `httpOnly`, `Secure` cookies. Version 2 will rep
 | Vite + React | ✅ Tested end-to-end in Chromium, Firefox and WebKit |
 | Create React App | ✅ `REACT_APP_` configuration covered by unit tests |
 | Node.js 20, 22, 24 (server) | ✅ Tested in CI |
+| Cross-tab sync | ✅ Tested end-to-end with two open tabs |
+| React | Hook requires React 18+; core API has no React dependency |
 | Data written by 1.3.2 | ✅ Read unchanged; 1.3.2 can read data written by later 1.x versions |
 
 ## Documentation
@@ -189,7 +235,7 @@ Bug reports, documentation improvements and focused pull requests are welcome. S
 ```sh
 npm install
 npm run typecheck
-npm test                     # unit, SSR, hydration and 1.3.2 compatibility tests
+npm test                     # unit, hook, SSR, hydration and 1.3.2 compatibility tests
 node scripts/setup-e2e.mjs   # build the Next.js, Vite and React Router test apps
 npm run test:e2e             # Playwright end-to-end tests
 ```

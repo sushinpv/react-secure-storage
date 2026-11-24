@@ -1,7 +1,7 @@
 # react-secure-storage — Roadmap
 
 **Baseline:** v1.3.2 · 23 November 2026
-**Status:** 1.3.3 implemented on branch `release/1.3.3` (24 November 2026), not yet released
+**Status:** 1.3.3 on branch `release/1.3.3` and 1.4.0 on branch `release/1.4` (24 November 2026), not yet released. v2 work goes on `release/2.0`.
 **Reported adoption:** ~75k weekly npm downloads
 **Maintainer model:** solo maintainer — this is a prioritised checklist, not a team process. Track each item as a GitHub issue using its ID.
 
@@ -132,21 +132,27 @@ Features (TTL, namespaces, hooks, cross-tab sync) come after these, and only whe
 
 **Behaviour changes to call out in release notes:** `clear()` keeps non-library keys; `require("react-secure-storage")` now returns the instance directly (`.default` still works).
 
-## Phase 3 — v1.4: small, demanded features
+## Phase 3 — v1.4 ✅ (implemented on branch `release/1.4`)
 
-### RST-020 — `useSecureStorage` hook [P1]
-- [ ] `const [value, setValue, remove] = useSecureStorage(key, initial)` — returns `initial` during SSR and first client render, then the stored value after mount (hydration-safe by design).
-- [ ] Exported from `react-secure-storage/react` so the core has no React dependency (the core already uses none).
-- [ ] Tests: SSR, hydration, updates, unmount.
+### RST-020 — `useSecureStorage` hook [P1] ✅
+- [x] `const [value, setValue, remove] = useSecureStorage(key, initial)`, built on `useSyncExternalStore` with a server snapshot: `initial` during SSR and hydration, the stored value after mount; in client-only apps the stored value on the first render.
+- [x] Exported from `react-secure-storage/react`; React is an optional peer dependency (>=18), the core has no React dependency.
+- [x] Tests: unit (updates, updater function, removal, shared key, key change, unmount), SSR render, hydration without mismatch, e2e in Next.js, Vite and React Router.
 
-### RST-021 — Read-through cache and cross-tab sync [P1]
-- [ ] Listen to the `storage` event to update the cache (C7); hook re-renders on change.
+### RST-021 — Read-through cache and cross-tab sync [P1] ✅
+- [x] `storage` event listener updates the cache per key (handles type changes and `localStorage.clear()` in other tabs) (C7).
+- [x] `onChange(listener)`; the hook re-renders on changes from this tab and other tabs.
+- [x] E2E: two real tabs stay in sync for set, increment and clear.
 
-### RST-023 — Package exports [P1]
-- [ ] Decide on `exports` map and ESM entry without a dual-package hazard (e.g. ESM wrapper re-exporting the CJS instance).
+### RST-022 — Error visibility [P1] ✅
+- [x] `onError(listener)` for `decrypt`, `write` (quota) and `unavailable` errors; never includes values.
+- [x] With a listener registered, failed writes are reported instead of thrown; without one, the previous throwing behaviour is kept.
+- [x] Fixed: a failed write no longer leaves the unsaved value in the in-memory cache.
 
-### RST-022 — Error visibility [P1]
-- [ ] Optional `onError` callback for decrypt failure, quota exceeded, unavailable storage — no values in logs.
+### RST-023 — Package exports [P1] ✅
+- [x] `exports` map: `.`, `./react`, `./dist/*` (keeps deep imports working), `./package.json`; `react/package.json` fallback for resolvers without `exports` support.
+- [x] **Decision:** no separate ESM build. A single CommonJS entry per path avoids two storage instances (dual-package hazard); the post-build interop step makes native Node ESM default and named imports work for both entries. Verified by resolving the package by name in Node ESM and CommonJS.
+- [x] Size budget split into core (12.5 KB) and the optional React entry (1.5 KB).
 
 ## Phase 4 — v2.0: replace the fingerprint key (breaking)
 
@@ -178,7 +184,7 @@ Features (TTL, namespaces, hooks, cross-tab sync) come after these, and only whe
 | Version | Scope | Gate |
 |---|---|---|
 | 1.3.3 | RST-001–005, RST-010–012 | CI green incl. SSR + all framework fixtures; legacy fixtures readable |
-| 1.4.0 | RST-020–022 | Hook SSR/hydration tests green |
+| 1.4.0 | RST-020–023 | Hook SSR/hydration tests green ✅ |
 | 2.0.0 | RST-030–032 | Migration tests on fixtures; migration guide; prerelease tested in at least one Next.js and one Vite app |
 
 ## Definition of done

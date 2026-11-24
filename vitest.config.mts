@@ -7,7 +7,7 @@ export default defineConfig({
         test: {
           name: "browser",
           environment: "jsdom",
-          include: ["tests/unit/**/*.test.ts", "tests/legacy/**/*.test.ts"],
+          include: ["tests/unit/**/*.test.{ts,tsx}", "tests/legacy/**/*.test.ts"],
           setupFiles: ["tests/setup/browser.ts"],
         },
       },

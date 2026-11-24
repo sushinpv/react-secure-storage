@@ -1,21 +1,30 @@
 #!/usr/bin/env node
 /**
- * Post-build step: make the CommonJS entry export the storage instance itself, with `.default` pointing to the same instance.
+ * Post-build step: make each CommonJS entry export its default value directly, keeping named exports and `.default`.
  *
- * Babel emits `exports.default = instance` with `__esModule`, which bundlers understand but native Node ESM does not:
+ * Babel emits `exports.default = value` with `__esModule`, which bundlers understand but native Node ESM does not:
  * `import s from "react-secure-storage"` in an unbundled SSR server (React Router, Remix, Astro) received `{ default }`.
- * After this step `import s from`, `require()` and `require().default` all return the same single instance.
+ * After this step, for each entry:
+ *   - `import x from` (native ESM), `require()` and `require().default` return the same value
+ *   - named exports (e.g. `useSecureStorage`) still work with `import { name }` and `require().name`
  */
 import { appendFileSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const entry = resolve(import.meta.dirname, "../dist/index.js");
+const ENTRIES = ["index.js", "react.js"];
 const marker = "// cjs-interop";
-if (!readFileSync(entry, "utf8").includes(marker)) {
+
+for (const file of ENTRIES) {
+  const entry = resolve(import.meta.dirname, "../dist", file);
+  if (readFileSync(entry, "utf8").includes(marker)) continue;
   appendFileSync(
     entry,
-    `\n${marker}: one instance for require(), require().default and native ESM default imports\n` +
-      `module.exports = exports.default;\n` +
+    `\n${marker}: one value for require(), require().default and native ESM default imports\n` +
+      `var __named = exports;\n` +
+      `module.exports = __named.default;\n` +
+      `Object.keys(__named).forEach(function (name) {\n` +
+      `  if (name !== "default" && name !== "__esModule") module.exports[name] = __named[name];\n` +
+      `});\n` +
       `Object.defineProperty(module.exports, "default", { value: module.exports, enumerable: false });\n`
   );
 }

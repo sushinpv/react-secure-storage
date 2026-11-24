@@ -13,7 +13,11 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "jsx": "react-jsx",
-    "types": ["node"]
+    "types": ["node"],
+    "paths": {
+      "react-secure-storage": ["./src/lib/types.d.ts"],
+      "react-secure-storage/react": ["./src/lib/types.react.d.ts"]
+    }
   },
   "include": ["src/lib", "tests", "vitest.config.mts", "playwright.config.ts", "scripts"],
   "exclude": ["tests/fixtures"]
