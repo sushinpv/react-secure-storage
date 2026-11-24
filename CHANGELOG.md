@@ -24,3 +24,20 @@
 - `SECURITY.md` describing what the library does and does not protect.
 
 Data written by 1.3.2 is read unchanged by 1.3.3, and data written by 1.3.3 can be read by 1.3.2.
+
+## 1.3.2
+
+- Bug fixes, including [#39](https://github.com/sushinpv/react-secure-storage/issues/39).
+
+## Earlier releases
+
+- Support for Vite (`VITE_`) and Next.js (`NEXT_PUBLIC_`) environment variables.
+- Individual fingerprint inputs can be disabled with `SECURE_LOCAL_STORAGE_DISABLED_KEYS` ([#14](https://github.com/sushinpv/react-secure-storage/issues/14)).
+- Values no longer read as `null` after the browser window is resized; screen resolution was removed from the fingerprint ([#9](https://github.com/sushinpv/react-secure-storage/issues/9)).
+- The browser hostname is part of the key, so each website gets a distinct key.
+- Configurable localStorage prefix with `SECURE_LOCAL_STORAGE_PREFIX`.
+- Fix for [#2](https://github.com/sushinpv/react-secure-storage/issues/2).
+- Support for Cypress (`Cypress.env()` configuration).
+- Type definitions for the whole package.
+- Support for older ES versions and Next.js.
+- First release with `setItem`, `getItem`, `removeItem` and `clear`.
