@@ -154,22 +154,83 @@ Features (TTL, namespaces, hooks, cross-tab sync) come after these, and only whe
 - [x] **Decision:** no separate ESM build. A single CommonJS entry per path avoids two storage instances (dual-package hazard); the post-build interop step makes native Node ESM default and named imports work for both entries. Verified by resolving the package by name in Node ESM and CommonJS.
 - [x] Size budget split into core (12.5 KB) and the optional React entry (1.5 KB).
 
-## Phase 4 — v2.0: replace the fingerprint key (breaking)
+## Phase 4 — v2.0: Web Crypto key, async API (breaking)
 
-### RST-030 — Web Crypto key design [P0 for v2]
-- [ ] Generate a **non-extractable AES-GCM `CryptoKey`** per origin, persist it in IndexedDB; random 96-bit nonce per write (fixes C9–C12).
-- [ ] Versioned payload: `{ v, alg, iv, ct }`.
-- [ ] Async API (`await storage.getItem(key)`) with an in-memory cache for fast reads; document why it is async.
-- [ ] SSR: same no-op contract as v1; key creation only in the browser.
-- [ ] Document what it does and does not protect: copied localStorage is unreadable elsewhere; same-origin XSS can still *use* the key.
+**Design status:** finalised 24 November 2026; implementation on branch `release/2.0` not started.
 
-### RST-031 — Migration from v1 [P0 for v2]
-- [ ] On first load, read v1 entries with the legacy fingerprint key, re-encrypt with the new key, remove old entries; interruption-safe.
-- [ ] Entries that fail legacy decryption are left untouched and reported via `onError`.
-- [ ] Verified against RST-003 fixtures; migration guide published.
+### Goals
+- Replace the guessable, unstable fingerprint key with a random, non-extractable Web Crypto key (fixes C9, C10, C11, C12).
+- Async by default, so stored data is decrypted on demand and startup cost doesn't grow with the amount of data.
+- Keep a synchronous option and the React hook.
+- Never destroy v1 data unless the app asks.
 
-### RST-032 — Remove `crypto-js` and `murmurhash-js` [P1 for v2]
-- [ ] Keep a minimal legacy decrypt path only for migration (or a separate `react-secure-storage/legacy` entry), then drop in v3.
+### RST-030 — Encryption and key [P0]
+- [ ] On first use in the browser, generate a 256-bit AES-GCM `CryptoKey` with `extractable: false` and keep it in IndexedDB. One key per origin.
+- [ ] Every write uses a random 96-bit IV. AES-GCM authenticates the data, so tampered or corrupted values are detected and read as `null` (reported as `decrypt` errors).
+- [ ] Storage key: `<prefix>2.<key>` (default `@secure.2.<key>`). The value's type moves into the encrypted payload, so a key can only ever have one entry.
+- [ ] Stored value: `{ "v": 2, "alg": "AES-GCM" | "legacy", "iv": <base64>, "ct": <base64> }`, where the plaintext is `{ "t": <type>, "d": <value> }`.
+- [ ] SSR: same contract as 1.4. On the server, async methods resolve to `null`, sync methods are no-ops, and the key is only created in the browser.
+
+### RST-031 — Fallback when Web Crypto or IndexedDB is unavailable [P0]
+- [ ] If `crypto.subtle` is missing (plain `http://`, except localhost) or IndexedDB is unavailable (some private modes), encrypt with the v1 fingerprint key, still using the v2 key format and payload with `"alg": "legacy"`, so fallback entries are never mistaken for v1 entries.
+- [ ] Report the first use through `onError` as `{ type: "fallback", key: null }`.
+- [ ] `hashKey` and `disabledKeys` apply only in fallback mode; with Web Crypto they're ignored.
+- [ ] Load crypto-js and murmurhash with a dynamic `import()` only when the fallback is needed, so HTTPS apps don't download them.
+- [ ] Strict mode: `fallback: false` (or `SECURE_LOCAL_STORAGE_FALLBACK=false`) disables the fallback. Storage then behaves as unavailable (no-ops, an `unavailable` error) instead of using the weaker key.
+
+### RST-032 — Entry points and API [P0]
+
+| Import | API | Behaviour |
+|---|---|---|
+| `react-secure-storage` (default) | `await getItem(key)`, `await setItem(key, value)`, `await removeItem(key)`, `await clear()`, `onChange`, `onError`, `configure` | Each key is decrypted when it's read, so there's no startup cost. Recommended for apps with lots of data. |
+| `react-secure-storage/sync` | `await ready()` once, then synchronous `getItem`, `setItem`, `removeItem`, `clear`, plus `onChange`, `onError`, `configure` | `ready()` decrypts everything into memory. Reads are synchronous; writes update memory immediately and are encrypted and saved in the background (failures go to `onError`). Reads before `ready()` return `null`. |
+| `react-secure-storage/react` | `const [value, setValue, remove, { loading }] = useSecureStorage(key, initialValue)` | Same as 1.4, plus a `loading` state. Shows `initialValue` while the value is being decrypted and during SSR or hydration. The 3-item form keeps working. |
+
+- [ ] All entries share one key, one store and one change stream, so they can be mixed in the same app.
+- [ ] Writes made through the sync entry before `ready()` resolves are kept, not overwritten by the initial load.
+- [ ] Hook: `loading` is `true` on the server, during hydration and until the first decrypt completes, then `false`.
+
+### RST-033 — Configuration [P0]
+- [ ] Each option can be set as an environment variable (with the `REACT_APP_`, `VITE_` and `NEXT_PUBLIC_` variants, as in v1) or through `configure()`. Values passed to `configure()` override environment variables.
+
+```ts
+import { configure } from "react-secure-storage";
+
+configure({
+  prefix: "my-app",            // SECURE_LOCAL_STORAGE_PREFIX, default "@secure."
+  migrate: true,               // SECURE_LOCAL_STORAGE_MIGRATE, default false
+  fallback: true,              // SECURE_LOCAL_STORAGE_FALLBACK, default true
+  hashKey: "xxxx",             // SECURE_LOCAL_STORAGE_HASH_KEY (fallback mode only)
+  disabledKeys: ["UserAgent"], // SECURE_LOCAL_STORAGE_DISABLED_KEYS (fallback mode only)
+});
+```
+
+- [ ] `configure()` must run before the first storage call. A later call reports a `config` error and is ignored, so the prefix and key can't change while the app is running.
+- [ ] `configure` is exported from every entry point and configures the same shared instance.
+
+### RST-034 — v1 data [P0]
+- [ ] **Kept by default.** v2 never reads, changes or deletes v1 entries (`<prefix>{b,j,n,s}.<key>`) on its own, so apps can turn on migration in any later release.
+- [ ] **Optional migration** (`migrate: true`): on first load in the browser, each readable v1 entry is re-encrypted into the v2 format, then that v1 entry is removed. Migration is safe to interrupt: the v1 entry is deleted only after the v2 entry is written, and the process can resume on the next load. v1 entries that can't be read (fingerprint drift) are left in place and reported as `decrypt` errors.
+- [ ] **`clear()` removes v1 entries too,** so logout leaves no data behind. Apps that want the data migrated must do it before clearing.
+- [ ] No separate `removeLegacyData()` method (decided against).
+- [ ] README: v1 data takes up localStorage space until it's migrated or cleared, and it becomes less readable over time as browsers update, so apps that want it should turn on migration in their first v2 release.
+
+### RST-035 — Performance and documentation [P0]
+- [ ] Benchmark on a mid-range phone and a laptop: async single-key reads, and `ready()` with 10, 100 and 1,000 entries and with a full ~5 MB of storage. Publish the numbers in the README.
+- [ ] README: explain that the sync entry decrypts everything at startup, and recommend the async default above a threshold set from the benchmark.
+- [ ] Migration guide at the top of the v2 release notes:
+  - `getItem` now returns a Promise. In plain JavaScript, unchanged code like `if (getItem("loggedIn"))` is always truthy, because a Promise is an object.
+  - Switching the import to `react-secure-storage/sync` and calling `await ready()` keeps v1-style calls.
+  - v1 data is not readable by v2 unless `migrate` is turned on.
+- [ ] `SECURITY.md`: what the v2 key protects (copied values can't be decrypted in another browser, tampering is detected) and what it doesn't (XSS can still use the key, malware or disk access to the browser profile).
+
+### RST-036 — Tests [P0]
+- [ ] Unit tests, with Web Crypto and IndexedDB test implementations: async and sync APIs, tamper detection, unique IV per write, the type stored inside the payload, and the sync entry's write queue before `ready()`.
+- [ ] Fallback tests: no `crypto.subtle`, no IndexedDB, strict mode, and that crypto-js is loaded lazily.
+- [ ] v1 coexistence, using values written by the published 1.4: untouched by default, migrated when enabled (including resuming after an interruption), removed by `clear()`.
+- [ ] Hook tests: the `loading` state through SSR, hydration and the first decrypt; no hydration mismatch.
+- [ ] E2E in every test app on HTTPS or localhost (Web Crypto) and in a plain-`http` fallback case. Values copied into another browser profile must not decrypt.
+- [ ] Benchmark script committed and run in CI as a smoke test, with no hard limits.
 
 ## Deferred (only if users ask)
 
@@ -185,7 +246,7 @@ Features (TTL, namespaces, hooks, cross-tab sync) come after these, and only whe
 |---|---|---|
 | 1.3.3 | RST-001–005, RST-010–012 | CI green incl. SSR + all framework fixtures; legacy fixtures readable |
 | 1.4.0 | RST-020–023 | Hook SSR/hydration tests green ✅ |
-| 2.0.0 | RST-030–032 | Migration tests on fixtures; migration guide; prerelease tested in at least one Next.js and one Vite app |
+| 2.0.0 | RST-030–036 | Fallback, migration and hook loading tests green; benchmark published; migration guide; prerelease tested in at least one Next.js and one Vite app |
 
 ## Definition of done
 
